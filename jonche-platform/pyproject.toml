@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "jonche-platform"
+version = "1.0.0"
+description = "Jonche unified luxury sneaker brand platform"
+authors = ["Jonche <hello@jonche.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["apps", "packages"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "I"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}JONCHE — Certificates{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="page-title">CERTIFICATES</div>
+    <div class="page-subtitle">Issue and verify authenticity</div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-ghost" onclick="window.location.reload()">REFRESH</button>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-title">ISSUED</div>
+    <a class="panel-action" href="/preorder" target="_blank">PUBLIC PREORDER</a>
+  </div>
+  <div id="certs-root" class="table"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/certificates.js') }}"></script>
+{% endblock %}
+

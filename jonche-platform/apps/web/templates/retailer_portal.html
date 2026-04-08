@@ -1,0 +1,34 @@
+{% extends "base_public.html" %}
+{% block title %}JONCHE — Retailer Portal{% endblock %}
+
+{% block content %}
+<div class="public-card wide">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px">
+    <div class="public-brand">
+      <div class="logo-wordmark">JONCHE</div>
+      <div class="logo-sub">Retailer Portal</div>
+    </div>
+    <div>
+      <a class="btn-ghost" href="/retailer/logout">LOGOUT</a>
+    </div>
+  </div>
+
+  <h1 class="public-title">Allocations</h1>
+  <p class="public-subtitle">Submit purchase orders against your allocations.</p>
+
+  <div id="retailer-allocations" class="table" style="margin-top:16px"></div>
+  <div id="retailer-msg" class="muted" style="margin-top:12px"></div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .po-input { width: 90px; }
+  .po-btn { padding: 8px 14px; font-size: 14px; }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/retailer_portal.js') }}"></script>
+{% endblock %}
+

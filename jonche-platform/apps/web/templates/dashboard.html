@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}JONCHE — Command Center{% endblock %}
+
+{% block content %}
+<!-- (Dashboard content rendered from apps/web/static/js/dashboard.js via API) -->
+<div id="dashboard-root">
+  <div class="topbar">
+    <div>
+      <div class="page-title">COMMAND CENTER</div>
+      <div class="page-subtitle">Jonche Platform — Unified Brand Intelligence</div>
+    </div>
+    <div class="topbar-right">
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        PLATFORM LIVE
+      </div>
+      <button class="btn-ghost">EXPORT</button>
+      <button class="btn-primary" onclick="window.location='/drops'">+ NEW DROP</button>
+    </div>
+  </div>
+
+  <!-- Stats injected by dashboard.js from API -->
+  <div id="stats-row" class="stats-row">
+    <div class="stat-card skeleton"></div>
+    <div class="stat-card skeleton"></div>
+    <div class="stat-card skeleton"></div>
+    <div class="stat-card skeleton"></div>
+  </div>
+
+  <div id="dashboard-content"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

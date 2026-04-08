@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}JONCHE Platform{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- NOISE TEXTURE -->
+<div class="noise-overlay"></div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-wordmark">JONCHE</div>
+    <div class="logo-sub">Platform v1.0</div>
+  </div>
+
+  <div class="nav-section">Command</div>
+  <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}">
+    <span class="nav-icon">◈</span> Dashboard
+  </a>
+  <a href="/drops" class="nav-item {% if request.path == '/drops' %}active{% endif %}">
+    <span class="nav-icon">⚡</span> Live Drops
+    <span class="nav-badge">3</span>
+  </a>
+
+  <div class="nav-section">Commerce</div>
+  <a href="/retailers" class="nav-item {% if request.path == '/retailers' %}active{% endif %}">
+    <span class="nav-icon">◻</span> Retailer Portal
+  </a>
+  <a href="/vip" class="nav-item {% if request.path == '/vip' %}active{% endif %}">
+    <span class="nav-icon">✦</span> VIP Club
+    <span class="nav-badge">142</span>
+  </a>
+
+  <div class="nav-section">Intelligence</div>
+  <a href="/analytics" class="nav-item {% if request.path == '/analytics' %}active{% endif %}">
+    <span class="nav-icon">▲</span> Analytics
+  </a>
+  <a href="/certificates" class="nav-item {% if request.path == '/certificates' %}active{% endif %}">
+    <span class="nav-icon">◇</span> Certificates
+  </a>
+
+  <div class="nav-section">Tools</div>
+  <a href="/admin" class="nav-item {% if request.path == '/admin' %}active{% endif %}">
+    <span class="nav-icon">◆</span> Admin Tools
+  </a>
+
+  <div class="nav-section">Account</div>
+  <a href="/logout" class="nav-item">
+    <span class="nav-icon">⟲</span> Logout
+  </a>
+
+  <div class="sidebar-footer">
+    © 2025 JONCHE™<br>ALL RIGHTS RESERVED
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+  {% block content %}{% endblock %}
+</main>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

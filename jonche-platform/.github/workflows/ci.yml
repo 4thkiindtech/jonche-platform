@@ -1,0 +1,70 @@
+name: Jonche Platform CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-api:
+    name: Test API
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install API dependencies
+        run: |
+          cd apps/api
+          pip install -r requirements.txt
+
+      - name: Run API tests
+        run: |
+          cd apps/api
+          python -m pytest tests/ -v --tb=short
+
+  test-web:
+    name: Test Web
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Web dependencies
+        run: |
+          cd apps/web
+          pip install -r requirements.txt
+
+      - name: Run Web tests
+        run: |
+          cd apps/web
+          python -m pytest tests/ -v --tb=short
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Run ruff
+        run: ruff check apps/ packages/

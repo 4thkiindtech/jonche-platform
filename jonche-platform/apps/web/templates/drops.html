@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}JONCHE — Drops{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="page-title">DROPS</div>
+    <div class="page-subtitle">Schedule, publish, and monitor releases</div>
+  </div>
+  <div class="topbar-right">
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      SECURE MODE
+    </div>
+    <button class="btn-ghost" onclick="window.location.reload()">REFRESH</button>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-title">DROP LIST</div>
+    <a class="panel-action" href="/preorder" target="_blank">PUBLIC PREORDER FORM</a>
+  </div>
+  <div id="drops-root" class="table"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/drops.js') }}"></script>
+{% endblock %}
+

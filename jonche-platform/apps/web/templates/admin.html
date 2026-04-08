@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}JONCHE — Admin Tools{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="page-title">ADMIN TOOLS</div>
+    <div class="page-subtitle">Exports, overrides, allocations, notifications</div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-ghost" onclick="window.location.reload()">REFRESH</button>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">EXPORTS</div>
+      <span class="panel-action">CSV</span>
+    </div>
+    <div class="kv">
+      <div class="kv-row"><div class="kv-k">Members</div><div class="kv-v"><a class="link mono" href="/api/admin/exports/members.csv" target="_blank">/api/admin/exports/members.csv</a></div></div>
+      <div class="kv-row"><div class="kv-k">Orders</div><div class="kv-v"><a class="link mono" href="/api/admin/exports/orders.csv" target="_blank">/api/admin/exports/orders.csv</a></div></div>
+      <div class="kv-row"><div class="kv-k">Preorders</div><div class="kv-v"><a class="link mono" href="/api/admin/exports/preorders.csv" target="_blank">/api/admin/exports/preorders.csv</a></div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">EMAIL QUEUE</div>
+      <span class="panel-action" id="notif-status">READY</span>
+    </div>
+    <button class="btn-primary full" id="send-notifs">SEND QUEUED</button>
+    <div class="hint">Uses <span class="mono">NOTIFY_PROVIDER</span> (default: <span class="mono">console</span>).</div>
+    <div class="muted" id="notif-result" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-top:20px">
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">DROP OVERRIDE</div>
+      <span class="panel-action">PATCH</span>
+    </div>
+    <form class="form" id="drop-override">
+      <label class="label">Drop Slug</label>
+      <input class="input" name="slug" placeholder="void-low" required>
+      <label class="label">Status</label>
+      <select class="input" name="status" required>
+        <option value="draft">draft</option>
+        <option value="upcoming">upcoming</option>
+        <option value="live">live</option>
+        <option value="sold_out">sold_out</option>
+        <option value="ended">ended</option>
+      </select>
+      <button class="btn-ghost full" type="submit">APPLY</button>
+      <div class="muted" id="drop-override-result"></div>
+    </form>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">ALLOCATIONS</div>
+      <span class="panel-action">UPSERT</span>
+    </div>
+    <form class="form" id="alloc-set">
+      <label class="label">Retailer ID</label>
+      <input class="input" name="retailer_id" type="number" min="1" required>
+      <label class="label">Drop ID</label>
+      <input class="input" name="drop_id" type="number" min="1" required>
+      <label class="label">Allocated Units</label>
+      <input class="input" name="allocated_units" type="number" min="0" required>
+      <button class="btn-ghost full" type="submit">SAVE</button>
+      <div class="muted" id="alloc-set-result"></div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}
+

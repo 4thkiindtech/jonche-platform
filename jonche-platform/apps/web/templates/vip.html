@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}JONCHE — VIP Club{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="page-title">VIP CLUB</div>
+    <div class="page-subtitle">Membership tiers and customer control</div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-ghost" onclick="window.location.reload()">REFRESH</button>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">COUNTS</div>
+      <span class="panel-action" onclick="window.location.reload()">UPDATE</span>
+    </div>
+    <div id="vip-counts" class="kv"></div>
+  </div>
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">RECENT MEMBERS</div>
+      <span class="panel-action" onclick="window.location.reload()">UPDATE</span>
+    </div>
+    <div id="vip-recent" class="table"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/vip.js') }}"></script>
+{% endblock %}
+

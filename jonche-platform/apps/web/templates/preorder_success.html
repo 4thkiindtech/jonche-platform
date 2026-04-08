@@ -1,0 +1,29 @@
+{% extends "base_public.html" %}
+{% block title %}JONCHE — Preorder Submitted{% endblock %}
+
+{% block content %}
+<div class="public-card wide">
+  <div class="public-brand">
+    <div class="logo-wordmark">JONCHE</div>
+    <div class="logo-sub">Preorder Intent</div>
+  </div>
+
+  <div class="verify-badge ok">RECEIVED</div>
+  <h1 class="public-title">Preorder Submitted</h1>
+  <p class="public-subtitle">We’ve captured your intent and size preference.</p>
+
+  <div class="kv">
+    <div class="kv-row"><div class="kv-k">Drop ID</div><div class="kv-v mono">{{ preorder.drop_id }}</div></div>
+    <div class="kv-row"><div class="kv-k">Email</div><div class="kv-v mono">{{ preorder.email }}</div></div>
+    <div class="kv-row"><div class="kv-k">Size</div><div class="kv-v mono">{{ preorder.size }}</div></div>
+    <div class="kv-row"><div class="kv-k">Deposit</div><div class="kv-v mono">${{ preorder.deposit_dollars }}</div></div>
+    <div class="kv-row"><div class="kv-k">Status</div><div class="kv-v mono">{{ preorder.status }}</div></div>
+  </div>
+
+  <div class="public-actions">
+    <a class="btn-ghost" href="/preorder">SUBMIT ANOTHER</a>
+    <a class="btn-primary" href="/">ADMIN DASHBOARD</a>
+  </div>
+</div>
+{% endblock %}
+

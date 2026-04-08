@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}JONCHE — Retailers{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="page-title">RETAILERS</div>
+    <div class="page-subtitle">Wholesale partners and allocations</div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-ghost" onclick="window.location.reload()">REFRESH</button>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-title">PARTNERS</div>
+    <span class="panel-action" onclick="window.location.reload()">SYNC</span>
+  </div>
+  <div id="retailers-root" class="table"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/retailers.js') }}"></script>
+{% endblock %}
+

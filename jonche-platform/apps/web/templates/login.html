@@ -1,0 +1,34 @@
+{% extends "base_public.html" %}
+{% block title %}JONCHE — Admin Login{% endblock %}
+
+{% block content %}
+<div class="public-card">
+  <div class="public-brand">
+    <div class="logo-wordmark">JONCHE</div>
+    <div class="logo-sub">Platform Admin</div>
+  </div>
+
+  <h1 class="public-title">Sign In</h1>
+  <p class="public-subtitle">Access the command center dashboard.</p>
+
+  {% if error %}
+  <div class="alert">{{ error }}</div>
+  {% endif %}
+
+  <form method="post" class="form">
+    <input type="hidden" name="next" value="{{ next or '/' }}">
+    <label class="label">Email</label>
+    <input class="input" type="email" name="email" autocomplete="username" required>
+
+    <label class="label">Password</label>
+    <input class="input" type="password" name="password" autocomplete="current-password" required>
+
+    <button class="btn-primary full" type="submit">LOGIN</button>
+  </form>
+
+  <div class="public-footnote">
+    Dev seed: <span class="mono">admin@jonche.com / jonche-admin-2025</span>
+  </div>
+</div>
+{% endblock %}
+

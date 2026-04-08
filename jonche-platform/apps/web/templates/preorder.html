@@ -1,0 +1,60 @@
+{% extends "base_public.html" %}
+{% block title %}JONCHE — Preorder{% endblock %}
+
+{% block content %}
+<div class="public-card wide">
+  <div class="public-brand">
+    <div class="logo-wordmark">JONCHE</div>
+    <div class="logo-sub">Preorder Intent</div>
+  </div>
+
+  <h1 class="public-title">Reserve Your Spot</h1>
+  <p class="public-subtitle">Submit your size preference and deposit intent.</p>
+
+  {% if error %}
+  <div class="alert">{{ error }}</div>
+  {% endif %}
+
+  <form method="post" class="form grid-form">
+    <div>
+      <label class="label">Drop</label>
+      <select class="input" name="drop_id" required>
+        <option value="" disabled selected>Select a drop…</option>
+        {% for d in drops %}
+          <option value="{{ d.id }}">{{ d.name }} — {{ d.colorway }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label class="label">Size</label>
+      <input class="input" name="size" placeholder="10" required>
+    </div>
+
+    <div>
+      <label class="label">Name</label>
+      <input class="input" name="name" autocomplete="name" required>
+    </div>
+
+    <div>
+      <label class="label">Email</label>
+      <input class="input" type="email" name="email" autocomplete="email" required>
+    </div>
+
+    <div>
+      <label class="label">Deposit (cents)</label>
+      <input class="input" type="number" min="0" name="deposit_cents" value="0">
+      <div class="hint">Use <span class="mono">0</span> if no deposit is required yet.</div>
+    </div>
+
+    <div class="grid-span">
+      <button class="btn-primary full" type="submit">SUBMIT PREORDER</button>
+    </div>
+  </form>
+
+  <div class="public-footnote">
+    This is a preorder intent capture — payment processing is not enforced here yet.
+  </div>
+</div>
+{% endblock %}
+

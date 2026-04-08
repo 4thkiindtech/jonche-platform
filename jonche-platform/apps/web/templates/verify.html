@@ -1,0 +1,32 @@
+{% extends "base_public.html" %}
+{% block title %}JONCHE — Verification{% endblock %}
+
+{% block content %}
+<div class="public-card wide">
+  <div class="public-brand">
+    <div class="logo-wordmark">JONCHE</div>
+    <div class="logo-sub">Authenticity Verification</div>
+  </div>
+
+  {% if data and data.verified %}
+    <div class="verify-badge ok">VERIFIED</div>
+    <h1 class="public-title">Authentic Pair Confirmed</h1>
+    <p class="public-subtitle">Certificate token: <span class="mono">{{ token }}</span></p>
+    <div class="kv">
+      <div class="kv-row"><div class="kv-k">Certificate</div><div class="kv-v mono">{{ data.certificate.cert_number }}</div></div>
+      <div class="kv-row"><div class="kv-k">Drop</div><div class="kv-v">{{ data.certificate.drop_name }}</div></div>
+      <div class="kv-row"><div class="kv-k">Size</div><div class="kv-v mono">{{ data.certificate.size }}</div></div>
+      <div class="kv-row"><div class="kv-k">Run</div><div class="kv-v mono">{{ data.certificate.run_number }} / {{ data.certificate.total_run }}</div></div>
+      <div class="kv-row"><div class="kv-k">Issued</div><div class="kv-v mono">{{ data.certificate.issued_at }}</div></div>
+    </div>
+  {% else %}
+    <div class="verify-badge bad">NOT FOUND</div>
+    <h1 class="public-title">Certificate Not Verified</h1>
+    <p class="public-subtitle">{{ error or "This token is invalid or has been removed." }}</p>
+    <div class="public-footnote">
+      If you believe this is an error, contact <span class="mono">support@jonche.com</span>.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
