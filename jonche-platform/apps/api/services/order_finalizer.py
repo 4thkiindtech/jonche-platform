@@ -10,6 +10,8 @@ from datetime import datetime
 from db import db
 from db.models import Order, CheckoutLock, Certificate, Member, Drop
 from services.notifications import enqueue_email
+from services import apliiq_client
+from services.apliiq_client import ApliiqError
 
 
 def finalize_order(order: Order) -> dict:
@@ -54,6 +56,9 @@ def finalize_order(order: Order) -> dict:
 
     db.session.commit()
 
+    # Submit to Apliiq for fulfillment (best-effort — never blocks order confirm)
+    _submit_to_apliiq(order)
+
     # Enqueue emails (best-effort)
     try:
         if order.member and order.member.email:
@@ -78,6 +83,62 @@ def finalize_order(order: Order) -> dict:
         pass
 
     return {"order": order, "certificate": cert}
+
+
+def _submit_to_apliiq(order: Order) -> None:
+    """
+    Auto-submit an order to Apliiq for fulfillment after it is confirmed.
+    Skips gracefully if credentials are not configured or already submitted.
+    Never raises — fulfillment failure must not block order confirmation.
+    """
+    import json as _json
+    import os as _os
+
+    if not _os.getenv("APLIIQ_APP_KEY") or not _os.getenv("APLIIQ_SHARED_SECRET"):
+        return  # Apliiq not configured — skip silently
+
+    if order.apliiq_order_id:
+        return  # Already submitted
+
+    drop = order.drop
+    addr_raw = order.shipping_address or ""
+    try:
+        addr = _json.loads(addr_raw) if addr_raw else {}
+        if not isinstance(addr, dict):
+            addr = {"address1": addr_raw}
+    except (ValueError, TypeError):
+        addr = {"address1": addr_raw}
+
+    items = []
+    for item in order.items:
+        li: dict = {"Quantity": item.quantity}
+        if drop and drop.apliiq_product_id:
+            li["ProductId"] = int(drop.apliiq_product_id)
+        if drop and drop.apliiq_variant_id:
+            li["SizeId"] = int(drop.apliiq_variant_id)
+        items.append(li)
+
+    payload = {
+        "ExternalId": order.order_number,
+        "Items": items,
+        "ShippingAddress": {
+            "Name":     order.shipping_name or "",
+            "Address1": addr.get("address1", addr.get("Address1", "")),
+            "Address2": addr.get("address2", addr.get("Address2", "")),
+            "City":     addr.get("city",     addr.get("City", "")),
+            "State":    addr.get("state",    addr.get("State", "")),
+            "Zip":      addr.get("zip",      addr.get("Zip", "")),
+            "Country":  addr.get("country",  addr.get("Country", "US")),
+        },
+    }
+
+    try:
+        result = apliiq_client.create_order(payload)
+        order.apliiq_order_id = str(result.get("id") or result.get("order_id", ""))
+        order.apliiq_status = result.get("status", "submitted")
+        db.session.commit()
+    except (ApliiqError, Exception):
+        pass  # Log in production; never surface to caller
 
 
 def mark_refunded(order: Order) -> Order:

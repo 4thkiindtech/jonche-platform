@@ -1,0 +1,121 @@
+{% extends "base_public.html" %}
+{% block title %}JONCHE — {{ program.title }}{% endblock %}
+
+{% block content %}
+<div class="public-card wide">
+  <div class="public-brand">
+    <div class="logo-wordmark">JONCHE</div>
+    <div class="logo-sub">Partnership Program</div>
+  </div>
+
+  <h1 class="public-title">{{ program.title }}</h1>
+  <p class="public-subtitle">{{ program.subtitle }}</p>
+
+  <div class="public-actions">
+    <a class="btn-ghost" href="/partners">ALL PROGRAMS</a>
+  </div>
+
+  <div class="grid-2" style="margin-top:20px">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">BENEFITS</div>
+        <span class="panel-action">OVERVIEW</span>
+      </div>
+      <ul class="muted" style="margin:0; padding-left:18px">
+        {% for b in program.benefits %}
+          <li style="margin: 6px 0">{{ b }}</li>
+        {% endfor %}
+      </ul>
+      <div class="public-footnote" style="margin-top:16px">
+        Commission: <span class="mono">{{ program.commission }}</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">APPLY</div>
+        <span class="panel-action">INTAKE</span>
+      </div>
+      <div class="muted">{{ program.cta }}</div>
+
+      {% if error %}
+      <div class="alert">{{ error }}</div>
+      {% endif %}
+
+      <form method="post" class="form grid-form">
+        <input type="hidden" name="source" value="{{ request.args.get('src','') }}">
+        <div>
+          <label class="label">Full Name</label>
+          <input class="input" name="full_name" autocomplete="name" required>
+        </div>
+        <div>
+          <label class="label">Business Name (optional)</label>
+          <input class="input" name="business_name" autocomplete="organization">
+        </div>
+
+        <div>
+          <label class="label">Email</label>
+          <input class="input" type="email" name="email" autocomplete="email" required>
+        </div>
+        <div>
+          <label class="label">Phone</label>
+          <input class="input" name="phone" autocomplete="tel">
+        </div>
+
+        <div class="grid-span">
+          <label class="label">Website / Social Link</label>
+          <input class="input" name="website_or_social" placeholder="https://…">
+        </div>
+
+        <div>
+          <label class="label">City</label>
+          <input class="input" name="city" autocomplete="address-level2">
+        </div>
+        <div>
+          <label class="label">State</label>
+          <input class="input" name="state" autocomplete="address-level1">
+        </div>
+
+        <div>
+          <label class="label">Estimated Monthly Reach</label>
+          <input class="input" name="estimated_monthly_reach" placeholder="10k / 50k / 200k">
+        </div>
+        <div>
+          <label class="label">Type of Network</label>
+          <select class="input" name="network_type">
+            <option value="" selected>Choose…</option>
+            <option value="retail_store">Retail store</option>
+            <option value="creators_media">Creators / media</option>
+            <option value="business_network">Business network</option>
+            <option value="funding_investors">Funding / investors</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="grid-span">
+          <label class="label">Interested In</label>
+          <div class="muted" style="display:grid; gap:6px; margin-top:8px">
+            <label><input type="checkbox" name="interested_in" value="selling_products"> Selling products</label>
+            <label><input type="checkbox" name="interested_in" value="referrals"> Referrals</label>
+            <label><input type="checkbox" name="interested_in" value="funding_introductions"> Funding introductions</label>
+            <label><input type="checkbox" name="interested_in" value="retail_partnership"> Retail partnership</label>
+          </div>
+        </div>
+
+        <div class="grid-span">
+          <label class="label">Additional Notes</label>
+          <textarea class="input" name="additional_notes" rows="4" placeholder="Tell us about your network / audience / goals…"></textarea>
+        </div>
+
+        <div class="grid-span">
+          <button class="btn-primary full" type="submit">SUBMIT APPLICATION</button>
+        </div>
+      </form>
+
+      <div class="public-footnote">
+        We review applications in order and follow up by email.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

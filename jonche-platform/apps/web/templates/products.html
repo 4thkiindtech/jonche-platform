@@ -1,0 +1,348 @@
+{% extends "base_public.html" %}
+
+{% block title %}Shop Products - Jonche Platform{% endblock %}
+
+{% block content %}
+<div class="container products-page py-5">
+  <div class="row">
+    <!-- ── Sidebar Filters ──────────────────────────────────────────────────── -->
+    <div class="col-md-3 mb-4">
+      <div class="filters-card bg-light rounded-3 p-4 sticky-top" style="top: 80px;">
+        <h5 class="mb-4"><i class="fas fa-filter"></i> Filters</h5>
+
+        <!-- Search -->
+        <div class="mb-4">
+          <label for="searchInput" class="form-label fw-bold">Search</label>
+          <input type="text" id="searchInput" class="form-control" placeholder="Search products...">
+        </div>
+
+        <!-- Categories -->
+        <div class="mb-4">
+          <label for="categorySelect" class="form-label fw-bold">Category</label>
+          <select id="categorySelect" class="form-select">
+            <option value="">All Categories</option>
+            <option disabled>Loading categories...</option>
+          </select>
+        </div>
+
+        <!-- Price Range -->
+        <div class="mb-4">
+          <label class="form-label fw-bold">Price Range</label>
+          <div class="d-flex gap-2 mb-2">
+            <input type="number" id="priceMin" class="form-control form-control-sm" placeholder="Min" value="0">
+            <input type="number" id="priceMax" class="form-control form-control-sm" placeholder="Max" value="1000">
+          </div>
+        </div>
+
+        <!-- Stock Status -->
+        <div class="mb-4">
+          <div class="form-check">
+            <input type="checkbox" id="inStockOnly" class="form-check-input" checked>
+            <label class="form-check-label" for="inStockOnly">In Stock Only</label>
+          </div>
+        </div>
+
+        <!-- Apply Filters Button -->
+        <button id="applyFilters" class="btn btn-primary w-100 mb-2">Apply Filters</button>
+        <button id="resetFilters" class="btn btn-outline-secondary w-100">Reset</button>
+      </div>
+    </div>
+
+    <!-- ── Products Display ─────────────────────────────────────────────────── -->
+    <div class="col-md-9">
+      <!-- Products Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Our Products</h2>
+        <div>
+          <label for="sortBy" class="form-label small me-2">Sort by:</label>
+          <select id="sortBy" class="form-select form-select-sm d-inline-block w-auto">
+            <option value="newest">Newest</option>
+            <option value="name">Name (A-Z)</option>
+            <option value="price-low">Price (Low to High)</option>
+            <option value="price-high">Price (High to Low)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div id="productsGrid" class="row g-4 mb-4">
+        <!-- Loading State -->
+        <div class="col-12 text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="text-muted mt-2">Loading products...</p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <nav id="paginationContainer" aria-label="Page navigation" style="display: none;">
+        <ul class="pagination justify-content-center">
+          <li class="page-item" id="prevPage">
+            <a class="page-link" href="#" aria-label="Previous">Previous</a>
+          </li>
+          <li class="page-item active" id="pageInfo">
+            <span class="page-link">Page 1</span>
+          </li>
+          <li class="page-item" id="nextPage">
+            <a class="page-link" href="#" aria-label="Next">Next</a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- No Results -->
+      <div id="noResults" class="alert alert-info text-center py-5" role="alert" style="display: none;">
+        <i class="fas fa-inbox fa-2x mb-3"></i>
+        <h5>No products found</h5>
+        <p class="text-muted">Try adjusting your filters or search terms.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add to Cart Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="addToCartToast" class="toast" role="alert">
+    <div class="toast-header bg-success text-white">
+      <strong class="me-auto"><i class="fas fa-check-circle"></i> Success</strong>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+    </div>
+    <div class="toast-body">
+      Product added to cart!
+    </div>
+  </div>
+</div>
+
+<style>
+.products-page {
+  background: #f8f9fa;
+}
+
+.filters-card {
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.product-grid-item {
+  transition: all 0.3s ease;
+}
+
+.product-grid-item:hover {
+  transform: translateY(-8px);
+}
+
+.product-image {
+  height: 250px;
+  overflow: hidden;
+  background: white;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.product-grid-item:hover .product-image img {
+  transform: scale(1.05);
+}
+
+.category-badge {
+  font-size: 0.85rem;
+}
+
+.stock-badge {
+  font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+  .col-md-3 {
+    order: 2;
+  }
+  
+  .col-md-9 {
+    order: 1;
+  }
+
+  .filters-card {
+    position: relative;
+    top: auto;
+  }
+}
+</style>
+
+<script>
+let currentPage = 1;
+let totalPages = 1;
+let filters = {
+  search: '',
+  category_id: null,
+  page: 1,
+  per_page: 12
+};
+
+// Load categories on page load
+document.addEventListener('DOMContentLoaded', function() {
+  loadCategories();
+  applyFilters();
+  
+  // Setup filter event listeners
+  document.getElementById('applyFilters').addEventListener('click', applyFilters);
+  document.getElementById('resetFilters').addEventListener('click', resetFilters);
+  document.getElementById('searchInput').addEventListener('keyup', debounce(applyFilters, 500));
+  document.getElementById('categorySelect').addEventListener('change', applyFilters);
+  document.getElementById('sortBy').addEventListener('change', applyFilters);
+  
+  // Pagination
+  document.getElementById('prevPage').addEventListener('click', (e) => {
+    e.preventDefault();
+    if (currentPage > 1) {
+      currentPage--;
+      applyFilters();
+    }
+  });
+  
+  document.getElementById('nextPage').addEventListener('click', (e) => {
+    e.preventDefault();
+    if (currentPage < totalPages) {
+      currentPage++;
+      applyFilters();
+    }
+  });
+});
+
+function loadCategories() {
+  fetch('/api/products/categories')
+    .then(res => res.json())
+    .then(categories => {
+      const select = document.getElementById('categorySelect');
+      categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.name;
+        select.appendChild(option);
+      });
+    })
+    .catch(err => console.error('Failed to load categories:', err));
+}
+
+function applyFilters() {
+  filters.search = document.getElementById('searchInput').value;
+  filters.category_id = document.getElementById('categorySelect').value || null;
+  filters.page = 1;
+  currentPage = 1;
+  loadProducts();
+}
+
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('categorySelect').value = '';
+  document.getElementById('priceMin').value = '0';
+  document.getElementById('priceMax').value = '1000';
+  document.getElementById('inStockOnly').checked = true;
+  applyFilters();
+}
+
+function loadProducts() {
+  const params = new URLSearchParams({
+    page: currentPage,
+    per_page: filters.per_page,
+  });
+  
+  if (filters.search) params.append('search', filters.search);
+  if (filters.category_id) params.append('category_id', filters.category_id);
+
+  fetch(`/api/products/?${params}`)
+    .then(res => res.json())
+    .then(data => {
+      renderProducts(data.items || []);
+      totalPages = data.pages || 1;
+      updatePagination();
+      
+      if (!data.items || data.items.length === 0) {
+        document.getElementById('productsGrid').style.display = 'none';
+        document.getElementById('noResults').style.display = 'block';
+      } else {
+        document.getElementById('productsGrid').style.display = 'grid';
+        document.getElementById('noResults').style.display = 'none';
+      }
+    })
+    .catch(err => {
+      console.error('Failed to load products:', err);
+      document.getElementById('productsGrid').innerHTML = 
+        '<div class="col-12 alert alert-danger">Failed to load products</div>';
+    });
+}
+
+function renderProducts(products) {
+  const grid = document.getElementById('productsGrid');
+  grid.innerHTML = products.map(product => `
+    <div class="col-sm-6 col-lg-4">
+      <div class="card product-grid-item h-100 border-0 shadow-sm">
+        <!-- Image -->
+        <div class="product-image bg-light position-relative">
+          ${product.primary_image ? 
+            `<img src="${product.primary_image.image_url}" alt="${product.primary_image.alt_text}">` :
+            `<div class="w-100 h-100 d-flex align-items-center justify-content-center bg-secondary text-white">
+              <i class="fas fa-image fa-3x opacity-50"></i>
+            </div>`
+          }
+          ${product.total_quantity <= 0 ? 
+            '<div class="position-absolute top-0 end-0 m-2"><span class="badge bg-danger">Out of Stock</span></div>' :
+            ''
+          }
+        </div>
+        
+        <!-- Content -->
+        <div class="card-body d-flex flex-column">
+          <p class="text-muted small mb-1"><i class="fas fa-tag"></i> ${product.category_name || 'Product'}</p>
+          <h5 class="card-title">
+            <a href="/store/product/${product.id}" class="text-decoration-none text-dark">
+              ${product.name}
+            </a>
+          </h5>
+          <p class="card-text text-muted small flex-grow-1">
+            ${product.description ? product.description.substring(0, 80) + '...' : 'Quality product'}
+          </p>
+          
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <h4 class="mb-0">$${(product.base_price_dollars).toFixed(2)}</h4>
+            <span class="badge ${product.total_quantity > 0 ? 'bg-success' : 'bg-danger'}">
+              ${product.total_quantity} in stock
+            </span>
+          </div>
+          
+          <a href="/store/product/${product.id}" class="btn btn-primary mt-3 w-100">
+            View Details
+          </a>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updatePagination() {
+  const prevBtn = document.getElementById('prevPage');
+  const nextBtn = document.getElementById('nextPage');
+  const pageInfo = document.getElementById('pageInfo');
+  const container = document.getElementById('paginationContainer');
+
+  if (totalPages <= 1) {
+    container.style.display = 'none';
+  } else {
+    container.style.display = 'block';
+    prevBtn.classList.toggle('disabled', currentPage === 1);
+    nextBtn.classList.toggle('disabled', currentPage === totalPages);
+    pageInfo.innerHTML = `<span class="page-link">Page ${currentPage} of ${totalPages}</span>`;
+  }
+}
+
+function debounce(func, delay) {
+  let timeoutId;
+  return function(...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  };
+}
+</script>
+{% endblock %}

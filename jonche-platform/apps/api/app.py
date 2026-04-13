@@ -103,6 +103,16 @@ def create_app(config_override=None):
     from routes.payments     import payments_bp
     from routes.notifications import notifications_bp
     from routes.admin        import admin_bp
+    from routes.products     import products_bp
+    from routes.store        import store_bp
+    from routes.apliiq       import apliiq_bp
+    from routes.fulfillment  import fulfillment_bp
+    from routes.warehouses   import warehouses_bp
+    from routes.store_orders import store_orders_bp
+    from routes.partners     import partners_bp
+    from routes.partner_dashboards import dashboards_bp
+    from routes.admin_partners import admin_partners_bp
+    from routes.payouts      import payouts_bp
 
     app.register_blueprint(auth_bp,          url_prefix="/api/auth")
     app.register_blueprint(drops_bp,         url_prefix="/api/drops")
@@ -118,6 +128,16 @@ def create_app(config_override=None):
     app.register_blueprint(payments_bp,      url_prefix="/api/payments")
     app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
     app.register_blueprint(admin_bp,         url_prefix="/api/admin")
+    app.register_blueprint(products_bp,      url_prefix="/api/products")
+    app.register_blueprint(store_bp,         url_prefix="/api/store")
+    app.register_blueprint(apliiq_bp,        url_prefix="/api/apliiq")
+    app.register_blueprint(fulfillment_bp,   url_prefix="/api/fulfillment")
+    app.register_blueprint(warehouses_bp,    url_prefix="/api/warehouses")
+    app.register_blueprint(store_orders_bp,  url_prefix="/api/store-orders")
+    app.register_blueprint(partners_bp,      url_prefix="/api/partners")
+    app.register_blueprint(dashboards_bp)
+    app.register_blueprint(admin_partners_bp)
+    app.register_blueprint(payouts_bp)
 
     @app.route("/api/health")
     def health():

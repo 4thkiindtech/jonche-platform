@@ -1,0 +1,44 @@
+{% extends "base_public.html" %}
+{% block title %}JONCHE — Partners{% endblock %}
+
+{% block content %}
+<div class="public-card wide">
+  <div class="public-brand">
+    <div class="logo-wordmark">JONCHE</div>
+    <div class="logo-sub">Partnership Programs</div>
+  </div>
+
+  <h1 class="public-title">Jonche Partnership Programs</h1>
+  <p class="public-subtitle">We help partners grow through exclusive footwear, funding access, and referral commissions.</p>
+
+  <div class="grid-2" style="margin-top:20px">
+    {% for key, p in programs.items() %}
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">{{ p.title|upper }}</div>
+        <a class="panel-action" href="{{ p.route }}">OPEN</a>
+      </div>
+      <div class="muted">{{ p.subtitle }}</div>
+      <div class="public-footnote">CTA: <span class="mono">{{ p.cta }}</span></div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="panel" style="margin-top:10px">
+    <div class="panel-header">
+      <div class="panel-title">COMMISSION STRUCTURE</div>
+      <span class="panel-action">FINAL</span>
+    </div>
+    <div class="kv">
+      <div class="kv-row"><div class="kv-k">Affiliate creators</div><div class="kv-v">10–15% per sale</div></div>
+      <div class="kv-row"><div class="kv-k">Bulk referral partners</div><div class="kv-v">20% wholesale order commission</div></div>
+      <div class="kv-row"><div class="kv-k">Strategic funding referrals</div><div class="kv-v">25% of earned funding commission</div></div>
+    </div>
+  </div>
+
+  <div class="public-footnote">
+    Pick a program above to apply. If you’re unsure, start with the closest fit — we can re-route internally.
+  </div>
+</div>
+{% endblock %}
+

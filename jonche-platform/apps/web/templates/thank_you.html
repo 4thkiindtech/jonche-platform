@@ -1,0 +1,29 @@
+{% extends "base_public.html" %}
+{% block title %}JONCHE — Thank You{% endblock %}
+
+{% block content %}
+<div class="public-card">
+  <div class="public-brand">
+    <div class="logo-wordmark">JONCHE</div>
+    <div class="logo-sub">Application Received</div>
+  </div>
+
+  <h1 class="public-title">Thank you.</h1>
+  <p class="public-subtitle">We received your submission and will follow up by email.</p>
+
+  {% if program %}
+  <div class="public-footnote">
+    Program: <span class="mono">{{ program.title }}</span>
+  </div>
+  {% endif %}
+
+  <div class="public-actions">
+    <a class="btn-primary" href="/partners">VIEW PROGRAMS</a>
+    {% if program %}
+    <a class="btn-ghost" href="{{ program.route }}">BACK TO PROGRAM</a>
+    {% endif %}
+    <a class="btn-ghost" href="/store">STORE</a>
+  </div>
+</div>
+{% endblock %}
+

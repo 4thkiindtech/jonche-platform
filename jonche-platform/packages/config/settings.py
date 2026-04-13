@@ -20,6 +20,10 @@ class Config:
     WEB_PORT: int        = int(os.getenv("WEB_PORT", 5000))
     API_PORT: int        = int(os.getenv("API_PORT", 5001))
 
+    # Apliiq print-on-demand / fulfillment
+    APLIIQ_APP_KEY: str      = os.getenv("APLIIQ_APP_KEY", "")
+    APLIIQ_SHARED_SECRET: str = os.getenv("APLIIQ_SHARED_SECRET", "")
+
     @property
     def is_dev(self) -> bool:
         return self.FLASK_ENV == "development"

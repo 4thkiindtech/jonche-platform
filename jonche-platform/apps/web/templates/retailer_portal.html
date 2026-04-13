@@ -2,33 +2,225 @@
 {% block title %}JONCHE — Retailer Portal{% endblock %}
 
 {% block content %}
-<div class="public-card wide">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px">
+<div class="public-card wide" style="max-width: 1200px; margin: 0 auto;">
+  <!-- Header -->
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:24px">
     <div class="public-brand">
       <div class="logo-wordmark">JONCHE</div>
       <div class="logo-sub">Retailer Portal</div>
     </div>
-    <div>
+    <div style="text-align:right">
+      <div id="retailer-info" style="margin-bottom:8px; font-size:0.9em;"></div>
       <a class="btn-ghost" href="/retailer/logout">LOGOUT</a>
     </div>
   </div>
 
-  <h1 class="public-title">Allocations</h1>
-  <p class="public-subtitle">Submit purchase orders against your allocations.</p>
+  <!-- Tab Navigation -->
+  <div style="display:flex;gap:16px;border-bottom:2px solid #f0f0f0;margin-bottom:24px;padding-bottom:12px;">
+    <button class="tab-btn active" data-tab="orders" style="background:none;border:none;padding:8px 0;cursor:pointer;border-bottom:3px solid #000;font-weight:500;">
+      📦 My Orders
+    </button>
+    <button class="tab-btn" data-tab="inventory" style="background:none;border:none;padding:8px 0;cursor:pointer;border-bottom:3px solid transparent;font-weight:500;">
+      📊 Inventory
+    </button>
+    <button class="tab-btn" data-tab="custom-order" style="background:none;border:none;padding:8px 0;cursor:pointer;border-bottom:3px solid transparent;font-weight:500;">
+      ➕ New Order
+    </button>
+    <button class="tab-btn" data-tab="allocations" style="background:none;border:none;padding:8px 0;cursor:pointer;border-bottom:3px solid transparent;font-weight:500;">
+      📋 Allocations
+    </button>
+  </div>
 
-  <div id="retailer-allocations" class="table" style="margin-top:16px"></div>
-  <div id="retailer-msg" class="muted" style="margin-top:12px"></div>
+  <!-- ─── TAB 1: MY ORDERS ─────────────────────────────────────────────────────── -->
+  <div id="tab-orders" class="tab-content" style="display:block;">
+    <h2 style="margin:0 0 16px 0;">My Store Orders</h2>
+    
+    <div style="margin-bottom:16px;">
+      <select id="order-filter" style="padding:8px 12px;border:1px solid #ddd;border-radius:4px;">
+        <option value="">All Orders</option>
+        <option value="pending">Pending</option>
+        <option value="confirmed">Confirmed</option>
+        <option value="in_fulfillment">In Fulfillment</option>
+        <option value="shipped">Shipped</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+
+    <div id="orders-list" class="table" style="margin-top:12px;"></div>
+    <div id="orders-msg" class="muted" style="margin-top:12px;"></div>
+  </div>
+
+  <!-- ─── TAB 2: INVENTORY ─────────────────────────────────────────────────────── -->
+  <div id="tab-inventory" class="tab-content" style="display:none;">
+    <h2 style="margin:0 0 16px 0;">Available Inventory</h2>
+    
+    <div style="margin-bottom:16px;display:flex;gap:12px;">
+      <select id="warehouse-filter" style="padding:8px 12px;border:1px solid #ddd;border-radius:4px;flex:1;">
+        <option value="">All Warehouses</option>
+        <option value="apliiq">Apliiq (Clothing)</option>
+        <option value="shoe_warehouse">Shoe Designs</option>
+      </select>
+      <select id="category-filter" style="padding:8px 12px;border:1px solid #ddd;border-radius:4px;flex:1;">
+        <option value="">All Categories</option>
+        <option value="clothing">Clothing</option>
+        <option value="shoes">Shoes</option>
+      </select>
+    </div>
+
+    <div id="inventory-list" class="table" style="margin-top:12px;"></div>
+    <div id="inventory-msg" class="muted" style="margin-top:12px;"></div>
+  </div>
+
+  <!-- ─── TAB 3: CREATE NEW ORDER ──────────────────────────────────────────────── -->
+  <div id="tab-custom-order" class="tab-content" style="display:none;">
+    <h2 style="margin:0 0 24px 0;">Create New Store Order</h2>
+    
+    <div style="background:#f9f9f9;padding:20px;border-radius:8px;">
+      <!-- Step 1: Select Warehouse -->
+      <div style="margin-bottom:24px;">
+        <h3 style="margin:0 0 12px 0;">Step 1: Select Warehouse</h3>
+        <div id="warehouse-options" style="display:flex;gap:12px;"></div>
+      </div>
+
+      <!-- Step 2: Select Items -->
+      <div style="margin-bottom:24px;">
+        <h3 style="margin:0 0 12px 0;">Step 2: Select Items</h3>
+        <div id="item-selector" style="display:none;">
+          <div id="available-items" style="max-height:300px;overflow-y:auto;border:1px solid #ddd;border-radius:4px;padding:12px;"></div>
+          <button id="add-item-btn" style="margin-top:12px;padding:8px 16px;background:#000;color:#fff;border:none;border-radius:4px;cursor:pointer;">Add Selected Items</button>
+        </div>
+        <div id="no-warehouse-msg" class="muted">Please select a warehouse first</div>
+      </div>
+
+      <!-- Order Summary -->
+      <div style="margin-bottom:24px;">
+        <h3 style="margin:0 0 12px 0;">Order Summary</h3>
+        <div id="order-summary" style="background:#fff;border:1px solid #ddd;border-radius:4px;padding:12px;">
+          <div class="muted">No items selected</div>
+        </div>
+      </div>
+
+      <!-- Shipping Info -->
+      <div style="margin-bottom:24px;">
+        <h3 style="margin:0 0 12px 0;">Shipping Information</h3>
+        <input id="shipping-name" type="text" placeholder="Shipping To (Store Name)" style="width:100%;padding:8px;margin-bottom:8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;">
+        <textarea id="shipping-address" placeholder="Full Shipping Address" style="width:100%;padding:8px;min-height:80px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;"></textarea>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display:flex;gap:12px;">
+        <button id="submit-order-btn" style="flex:1;padding:12px 16px;background:#000;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:500;">Submit Order</button>
+        <button id="cancel-order-btn" style="flex:1;padding:12px 16px;background:#f0f0f0;color:#000;border:none;border-radius:4px;cursor:pointer;font-weight:500;">Cancel</button>
+      </div>
+
+      <div id="order-msg" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <!-- ─── TAB 4: ALLOCATIONS ──────────────────────────────────────────────────── -->
+  <div id="tab-allocations" class="tab-content" style="display:none;">
+    <h1 class="public-title">Your Allocations</h1>
+    <p class="public-subtitle">Submit purchase orders against your allocations.</p>
+
+    <div id="retailer-allocations" class="table" style="margin-top:16px"></div>
+    <div id="retailer-msg" class="muted" style="margin-top:12px"></div>
+  </div>
 </div>
+
+<!-- Modal for Order Details -->
+<div id="order-detail-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:8px;padding:24px;max-width:500px;width:90%;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 id="modal-title" style="margin:0;">Order Details</h2>
+      <button id="close-modal" style="background:none;border:none;font-size:24px;cursor:pointer;">×</button>
+    </div>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- Modal for Payment -->
+<div id="payment-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1001;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:8px;padding:24px;max-width:500px;width:90%;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 id="payment-modal-title" style="margin:0;">Payment</h2>
+      <button onclick="closePaymentModal()" style="background:none;border:none;font-size:24px;cursor:pointer;">×</button>
+    </div>
+    
+    <div style="margin-bottom:20px;padding:12px;background:#f9f9f9;border-radius:4px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <strong>Amount Due:</strong>
+        <strong id="payment-amount" style="font-size:1.2em;">$0.00</strong>
+      </div>
+    </div>
+
+    <form onsubmit="processPayment(event)" style="margin-bottom:16px;">
+      <input type="hidden" id="payment-order-id">
+      
+      <div style="margin-bottom:16px;">
+        <label style="display:block;margin-bottom:8px;font-weight:500;">Cardholder Name</label>
+        <input id="cardholder-name" type="text" placeholder="Jane Doe" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;">
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label style="display:block;margin-bottom:8px;font-weight:500;">Card Details</label>
+        <div id="card-element" style="border:1px solid #ddd;border-radius:4px;padding:12px;background:#fff;"></div>
+      </div>
+
+      <button id="payment-submit-btn" type="submit" style="width:100%;padding:12px 16px;background:#000;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:500;font-size:1em;">Complete Payment</button>
+    </form>
+
+    <div id="payment-msg" style="margin-top:12px;"></div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_head %}
 <style>
-  .po-input { width: 90px; }
-  .po-btn { padding: 8px 14px; font-size: 14px; }
+  .tab-btn { padding: 8px 16px; margin-right: 8px; transition: all 0.3s; }
+  .tab-btn.active { border-bottom: 3px solid #000; color: #000; }
+  .tab-btn:not(.active) { border-bottom: 3px solid transparent; color: #666; }
+  .tab-content { display: none; animation: slideIn 0.3s; }
+  .tab-content.active { display: block; }
+  @keyframes slideIn { from { opacity: 0; } to { opacity: 1; } }
+  
+  .warehouse-card { border: 1px solid #ddd; border-radius: 4px; padding: 16px; cursor: pointer; text-align: center; transition: all 0.2s; }
+  .warehouse-card:hover { border-color: #000; background: #f9f9f9; }
+  .warehouse-card.selected { border: 2px solid #000; background: #000; color: #fff; }
+  
+  .item-row { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+  .item-row input[type="checkbox"] { margin-right: 12px; }
+  .item-row:hover { background: #f9f9f9; }
+  
+  .order-card { border: 1px solid #ddd; border-radius: 4px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; }
+  .order-card:hover { border-color: #000; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+  
+  .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; font-weight: 500; }
+  .status-pending { background: #fff3cd; color: #856404; }
+  .status-confirmed { background: #cfe2ff; color: #084298; }
+  .status-in_fulfillment { background: #e2e3e5; color: #41464b; }
+  .status-shipped { background: #d1e7dd; color: #0f5132; }
+  .status-completed { background: #d1e7dd; color: #0f5132; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 12px; font-weight: 600; border-bottom: 2px solid #ddd; }
+  td { padding: 12px; border-bottom: 1px solid #eee; }
+  tr:hover { background: #f9f9f9; }
+
+  .message { padding: 12px 16px; border-radius: 4px; margin: 12px 0; }
+  .message-success { background: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+  .message-error { background: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+  .message-info { background: #cfe2ff; color: #084298; border: 1px solid #b6d4fe; }
 </style>
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+  // Make Stripe public key available globally
+  window.STRIPE_PUBLIC_KEY = "{{ STRIPE_PUBLIC_KEY }}";
+</script>
 <script src="{{ url_for('static', filename='js/retailer_portal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/stripe-checkout.js') }}"></script>
 {% endblock %}
 

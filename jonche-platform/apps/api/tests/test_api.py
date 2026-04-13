@@ -8,6 +8,9 @@ import pytest
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
+# Avoid collision with apps/web/app.py which also imports as module name "app"
+# when the full test suite runs.
+sys.modules.pop("app", None)
 from app import create_app
 from db import db as _db
 from db.models import Admin, Member, Retailer, Drop
@@ -408,3 +411,51 @@ def test_list_qr_campaigns(client, admin_token):
     r = client.get("/api/qr/", headers=ah(admin_token))
     assert r.status_code == 200
     assert isinstance(r.get_json(), list)
+
+
+# ── Partner Applications ──────────────────────────────────────────────────────
+def test_create_partner_application_public(client):
+    r = client.post("/api/partners/apply", json={
+        "program_type": "affiliate_creators",
+        "source": "ig",
+        "utm": {"utm_source": "instagram", "utm_campaign": "phase5"},
+        "full_name": "Test Partner",
+        "email": "partner@test.com",
+        "business_name": "Test Biz",
+        "phone": "555-0100",
+        "website_or_social": "https://example.com",
+        "city": "New York",
+        "state": "NY",
+        "estimated_monthly_reach": "50k",
+        "network_type": "creators_media",
+        "interested_in": ["referrals", "selling_products"],
+        "additional_notes": "Hello",
+    })
+    assert r.status_code == 201
+    d = r.get_json()
+    assert d["program_type"] == "affiliate_creators"
+    assert d["email"] == "partner@test.com"
+    assert d["source"] == "ig"
+    assert d["utm"]["utm_source"] == "instagram"
+    assert "created_at" in d
+
+
+def test_create_partner_application_missing_field(client):
+    r = client.post("/api/partners/apply", json={"full_name": "X"})
+    assert r.status_code == 400
+
+
+def test_list_partner_applications_admin_only(client, admin_token, member_token):
+    assert client.get("/api/partners/applications").status_code == 401
+    assert client.get("/api/partners/applications", headers=ah(member_token)).status_code == 403
+    r = client.get("/api/partners/applications", headers=ah(admin_token))
+    assert r.status_code == 200
+    assert isinstance(r.get_json(), list)
+
+
+def test_export_partner_applications_csv_admin_only(client, admin_token, member_token):
+    assert client.get("/api/admin/exports/partner_applications.csv").status_code == 401
+    assert client.get("/api/admin/exports/partner_applications.csv", headers=ah(member_token)).status_code == 403
+    r = client.get("/api/admin/exports/partner_applications.csv", headers=ah(admin_token))
+    assert r.status_code == 200
+    assert r.headers.get("content-type", "").startswith("text/csv")

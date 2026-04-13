@@ -13,7 +13,8 @@ from app import app
 from db import db
 from db.models import (
     Admin, Member, Retailer, Drop,
-    WaitlistEntry, Certificate, QRCampaign, RetailerAllocation
+    WaitlistEntry, Certificate, QRCampaign, RetailerAllocation,
+    ProductCategory, Product, ProductVariant, ProductImage, Commercial
 )
 
 
@@ -24,9 +25,11 @@ def seed():
         print("✓ Tables created")
 
         # ── Admins ──────────────────────────────────────────────────────────
+        admin_email = os.getenv("DEV_ADMIN_EMAIL", "admin@jonche.com")
+        admin_password = os.getenv("DEV_ADMIN_PASSWORD", "jonche-admin-2026")
         admin = Admin(
-            email="admin@jonche.com",
-            password_hash=generate_password_hash("jonche-admin-2025"),
+            email=admin_email,
+            password_hash=generate_password_hash(admin_password),
             name="Jonche Admin",
             is_superadmin=True,
         )
@@ -45,7 +48,7 @@ def seed():
         for email, name, tier, spend in members_data:
             m = Member(
                 email=email,
-                password_hash=generate_password_hash("member-pass-2025"),
+                password_hash=generate_password_hash(os.getenv("DEV_MEMBER_PASSWORD", "member-pass-2026")),
                 name=name,
                 tier=tier,
                 lifetime_spend=spend,
@@ -66,7 +69,7 @@ def seed():
         for email, name, contact, tier, status in retailers_data:
             r = Retailer(
                 email=email,
-                password_hash=generate_password_hash("retailer-pass-2025"),
+                password_hash=generate_password_hash(os.getenv("DEV_RETAILER_PASSWORD", "retailer-pass-2026")),
                 name=name,
                 contact_name=contact,
                 tier=tier,
@@ -196,10 +199,79 @@ def seed():
             db.session.add(cert)
         print("✓ Certificates seeded")
 
+        # ── Store categories/products (for storefront UI dev) ────────────────
+        apparel = ProductCategory(
+            name="Apparel",
+            slug="apparel",
+            description="Essentials and seasonal pieces.",
+            display_order=1,
+            is_active=True,
+        )
+        accessories = ProductCategory(
+            name="Accessories",
+            slug="accessories",
+            description="Add-ons and limited accessories.",
+            display_order=2,
+            is_active=True,
+        )
+        db.session.add_all([apparel, accessories])
+        db.session.flush()
+
+        tee = Product(
+            sku="JNC-TEE-001",
+            name="Jonche Classic Tee",
+            slug="jonche-classic-tee",
+            description="Heavyweight cotton tee with Jonche wordmark.",
+            category_id=apparel.id,
+            base_price=3500,
+            is_available=True,
+            display_order=1,
+        )
+        cap = Product(
+            sku="JNC-CAP-001",
+            name="Jonche Signature Cap",
+            slug="jonche-signature-cap",
+            description="Embroidered cap with adjustable strap.",
+            category_id=accessories.id,
+            base_price=4200,
+            is_available=True,
+            display_order=2,
+        )
+        db.session.add_all([tee, cap])
+        db.session.flush()
+
+        db.session.add_all([
+            ProductVariant(product_id=tee.id, variant_sku="JNC-TEE-001-S", option_name="size", option_value="S", quantity_in_stock=25),
+            ProductVariant(product_id=tee.id, variant_sku="JNC-TEE-001-M", option_name="size", option_value="M", quantity_in_stock=40),
+            ProductVariant(product_id=tee.id, variant_sku="JNC-TEE-001-L", option_name="size", option_value="L", quantity_in_stock=35),
+            ProductVariant(product_id=cap.id, variant_sku="JNC-CAP-001-BLK", option_name="color", option_value="Black", quantity_in_stock=30),
+        ])
+
+        placeholder_tee = "https://placehold.co/900x900/png?text=JONCHE+TEE"
+        placeholder_cap = "https://placehold.co/900x900/png?text=JONCHE+CAP"
+        db.session.add_all([
+            ProductImage(product_id=tee.id, image_url=placeholder_tee, alt_text="Jonche Classic Tee", is_primary=True, display_order=1),
+            ProductImage(product_id=cap.id, image_url=placeholder_cap, alt_text="Jonche Signature Cap", is_primary=True, display_order=1),
+        ])
+        print("✓ Store products seeded")
+
+        # ── Commercials (for store hero) ─────────────────────────────────────
+        commercial = Commercial(
+            title="Jonche — Launch Reel",
+            description="A quick look at the latest collection.",
+            video_url="https://www.w3schools.com/html/mov_bbb.mp4",
+            thumbnail_url="https://placehold.co/1600x900/png?text=JONCHE+LAUNCH",
+            display_order=1,
+            is_active=True,
+        )
+        db.session.add(commercial)
+        print("✓ Store commercials seeded")
+
         db.session.commit()
         print("\n🖤 Jonche database seeded successfully.")
-        print(f"   Admin login: admin@jonche.com / jonche-admin-2025")
-        print(f"   Member login: jordan@example.com / member-pass-2025")
+        print(f"   Admin login: {admin_email} / {admin_password}")
+        print(f"   Member login: jordan@example.com / {os.getenv('DEV_MEMBER_PASSWORD', 'member-pass-2026')}")
+        print(f"   Retailer login: buyer@kith.com / {os.getenv('DEV_RETAILER_PASSWORD', 'retailer-pass-2026')}")
 
 
 if __name__ == "__main__":

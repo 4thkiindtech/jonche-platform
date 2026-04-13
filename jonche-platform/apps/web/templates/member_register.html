@@ -1,0 +1,39 @@
+{% extends "base_public.html" %}
+{% block title %}JONCHE — Create Account{% endblock %}
+
+{% block content %}
+<div class="public-card">
+  <div class="public-brand">
+    <div class="logo-wordmark">JONCHE</div>
+    <div class="logo-sub">Store Account</div>
+  </div>
+
+  <h1 class="public-title">Create Account</h1>
+  <p class="public-subtitle">Use this to checkout in the Jonche store.</p>
+
+  {% if error %}
+  <div class="alert">{{ error }}</div>
+  {% endif %}
+
+  <form method="post" class="form">
+    <input type="hidden" name="next" value="{{ next or '/store' }}">
+
+    <label class="label">Name</label>
+    <input class="input" type="text" name="name" autocomplete="name" required>
+
+    <label class="label">Email</label>
+    <input class="input" type="email" name="email" autocomplete="username" required>
+
+    <label class="label">Password</label>
+    <input class="input" type="password" name="password" autocomplete="new-password" required>
+    <div class="public-footnote">Minimum 8 characters.</div>
+
+    <button class="btn-primary full" type="submit">CREATE ACCOUNT</button>
+  </form>
+
+  <div class="public-footnote">
+    Already have an account? <a href="{{ url_for('account_login', next=next or '/store') }}">Sign in</a>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,399 @@
+{% extends "base_public.html" %}
+{% block title %}Affiliate Dashboard — JONCHE{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper" style="max-width: 1400px; margin: 0 auto; padding: 20px;">
+  
+  <!-- Header Bar -->
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:32px;padding-bottom:24px;border-bottom:2px solid #f0f0f0;">
+    <div>
+      <div class="page-title">YOUR AFFILIATE DASHBOARD</div>
+      <div class="page-subtitle">Earnings, Referrals & Real-Time Performance</div>
+    </div>
+    <div style="text-align:right;">
+      <div id="profile-name" style="font-weight:600;margin-bottom:8px;"></div>
+      <div style="display:flex;gap:12px;justify-content:flex-end;">
+        <button class="btn-ghost" onclick="copyReferralLink()">📋 COPY LINK</button>
+        <a href="/affiliate/logout" class="btn-ghost">LOGOUT</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:32px;">
+    <div class="stat-card">
+      <div class="stat-label">💰 Total Earnings</div>
+      <div class="stat-value" id="total-earnings">$0.00</div>
+      <div class="stat-subtext">All time</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">⏳ Pending</div>
+      <div class="stat-value" id="pending-earnings">$0.00</div>
+      <div class="stat-subtext">Awaiting approval</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">🔗 Clicks</div>
+      <div class="stat-value" id="total-clicks">0</div>
+      <div class="stat-subtext">Link impressions</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">📈 Conversion Rate</div>
+      <div class="stat-value" id="conversion-rate">0%</div>
+      <div class="stat-subtext">Clicks → Sales</div>
+    </div>
+  </div>
+
+  <!-- Referral Link Box -->
+  <div style="background:#000;color:#fff;padding:24px;border-radius:8px;margin-bottom:32px;">
+    <div style="font-weight:600;margin-bottom:12px;">🎯 YOUR REFERRAL LINK</div>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <input id="referral-link-input" type="text" readonly style="flex:1;padding:12px;background:#222;border:1px solid #444;color:#fff;border-radius:4px;font-family:monospace;font-size:0.9em;" />
+      <button onclick="copyReferralLink()" class="btn-primary" style="white-space:nowrap;">COPY LINK</button>
+      <button onclick="shareReferralLink()" class="btn-ghost" style="white-space:nowrap;color:#fff;border-color:#fff;">SHARE</button>
+    </div>
+    <div style="margin-top:12px;font-size:0.85em;color:#999;">
+      Share this link on socials, email, or your bio. Each sale earns you a commission!
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div style="display:flex;gap:16px;border-bottom:2px solid #f0f0f0;margin-bottom:24px;padding-bottom:12px;">
+    <button class="tab-btn active" data-tab="earnings" onclick="switchTab(event, 'earnings')" style="background:none;border:none;padding:8px 0;cursor:pointer;border-bottom:3px solid #000;font-weight:600;">
+      💵 Earnings History
+    </button>
+    <button class="tab-btn" data-tab="referrals" onclick="switchTab(event, 'referrals')" style="background:none;border:none;padding:8px 0;cursor:pointer;border-bottom:3px solid transparent;font-weight:600;">
+      🔗 Recent Referrals
+    </button>
+    <button class="tab-btn" data-tab="campaigns" onclick="switchTab(event, 'campaigns')" style="background:none;border:none;padding:8px 0;cursor:pointer;border-bottom:3px solid transparent;font-weight:600;">
+      📊 Campaigns
+    </button>
+    <button class="tab-btn" data-tab="messages" onclick="switchTab(event, 'messages')" style="background:none;border:none;padding:8px 0;cursor:pointer;border-bottom:3px solid transparent;font-weight:600;">
+      💬 Messages
+    </button>
+    <button class="tab-btn" data-tab="profile" onclick="switchTab(event, 'profile')" style="background:none;border:none;padding:8px 0;cursor:pointer;border-bottom:3px solid transparent;font-weight:600;">
+      👤 Profile
+    </button>
+  </div>
+
+  <!-- TAB: EARNINGS HISTORY -->
+  <div id="tab-earnings" class="tab-content" style="display:block;">
+    <h3>Earnings History</h3>
+    <div style="margin-bottom:16px;display:flex;gap:12px;">
+      <select id="earnings-filter" onchange="filterEarnings()" style="padding:8px 12px;border:1px solid #ddd;border-radius:4px;">
+        <option value="">All</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="paid">Paid</option>
+      </select>
+    </div>
+    <div id="earnings-list" style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;"></div>
+    <div id="earnings-msg" class="muted" style="margin-top:12px;text-align:center;"></div>
+  </div>
+
+  <!-- TAB: RECENT REFERRALS -->
+  <div id="tab-referrals" class="tab-content" style="display:none;">
+    <h3>Recent Referrals</h3>
+    <div id="referrals-list" style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;"></div>
+    <div id="referrals-msg" class="muted" style="margin-top:12px;text-align:center;"></div>
+  </div>
+
+  <!-- TAB: CAMPAIGNS -->
+  <div id="tab-campaigns" class="tab-content" style="display:none;">
+    <h3>Your Campaigns</h3>
+    <p class="muted">Coming soon: Track performance across different campaigns and sources.</p>
+  </div>
+
+  <!-- TAB: MESSAGES -->
+  <div id="tab-messages" class="tab-content" style="display:none;">
+    <h3>Messages from JONCHE</h3>
+    <div id="messages-list" style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;"></div>
+    <div id="messages-msg" class="muted" style="margin-top:12px;text-align:center;"></div>
+  </div>
+
+  <!-- TAB: PROFILE -->
+  <div id="tab-profile" class="tab-content" style="display:none;">
+    <h3>Profile Settings</h3>
+    <form id="profile-form" onsubmit="saveProfile(event)" style="display:flex;flex-direction:column;gap:16px;max-width:600px;">
+      <div>
+        <label style="display:block;margin-bottom:6px;font-weight:600;">Display Name</label>
+        <input id="profile-display-name" type="text" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" />
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:6px;font-weight:600;">Bio</label>
+        <textarea id="profile-bio" rows="4" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;font-family:inherit;"></textarea>
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:6px;font-weight:600;">Instagram Handle</label>
+        <input id="profile-instagram" type="text" placeholder="@yourhandle" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" />
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:6px;font-weight:600;">TikTok Handle</label>
+        <input id="profile-tiktok" type="text" placeholder="@yourhandle" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" />
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:6px;font-weight:600;">Website/Portfolio</label>
+        <input id="profile-website" type="url" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" />
+      </div>
+      <button type="submit" class="btn-primary">SAVE PROFILE</button>
+    </form>
+  </div>
+
+</div>
+
+<style>
+  .dashboard-wrapper {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  
+  .stat-card {
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .stat-label {
+    font-size: 0.85em;
+    color: #666;
+    margin-bottom: 8px;
+  }
+  
+  .stat-value {
+    font-size: 1.8em;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  
+  .stat-subtext {
+    font-size: 0.75em;
+    color: #999;
+  }
+  
+  .tab-content {
+    animation: fadeIn 0.2s ease-in;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .btn-primary {
+    background: #000;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .btn-primary:hover {
+    background: #333;
+  }
+  
+  .btn-ghost {
+    background: none;
+    border: 1px solid #ddd;
+    padding: 10px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  .btn-ghost:hover {
+    border-color: #000;
+  }
+  
+  .page-title {
+    font-size: 2em;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  
+  .page-subtitle {
+    font-size: 0.9em;
+    color: #666;
+  }
+  
+  .muted {
+    color: #999;
+    font-size: 0.9em;
+  }
+</style>
+
+<script>
+  // Global state
+  let currentAffiliateId = null;
+  let currentAffiliate = null;
+
+  // Initialize dashboard
+  async function initDashboard() {
+    try {
+      const res = await fetch('/api/dashboards/affiliate/dashboard');
+      if (!res.ok) throw new Error('Failed to load dashboard');
+      
+      const data = await res.json();
+      currentAffiliate = data.profile;
+      currentAffiliateId = data.profile.id;
+      
+      // Populate header
+      document.getElementById('profile-name').textContent = `👋 ${data.profile.display_name}`;
+      
+      // Populate stats
+      document.getElementById('total-earnings').textContent = `$${(data.profile.total_earnings_dollars).toFixed(2)}`;
+      document.getElementById('pending-earnings').textContent = `$${(data.profile.pending_earnings_dollars).toFixed(2)}`;
+      document.getElementById('total-clicks').textContent = data.profile.total_clicks.toLocaleString();
+      document.getElementById('conversion-rate').textContent = `${data.profile.conversion_rate}%`;
+      
+      // Populate referral link
+      document.getElementById('referral-link-input').value = `${window.location.origin}${data.profile.referral_link}`;
+      
+      // Populate profile form
+      document.getElementById('profile-display-name').value = data.profile.display_name || '';
+      document.getElementById('profile-bio').value = data.profile.bio || '';
+      document.getElementById('profile-instagram').value = data.profile.instagram_handle || '';
+      document.getElementById('profile-tiktok').value = data.profile.tiktok_handle || '';
+      document.getElementById('profile-website').value = data.profile.website_url || '';
+      
+      // Load earnings
+      loadEarnings();
+      loadMessages();
+      
+    } catch (err) {
+      console.error('Dashboard init error:', err);
+      alert('Failed to load dashboard');
+    }
+  }
+
+  async function loadEarnings() {
+    try {
+      const res = await fetch('/api/dashboards/affiliate/earnings?limit=20');
+      if (!res.ok) throw new Error('Failed to load earnings');
+      
+      const data = await res.json();
+      
+      if (!data.earnings || data.earnings.length === 0) {
+        document.getElementById('earnings-msg').textContent = 'No earnings yet. Share your referral link to get started!';
+        return;
+      }
+      
+      const html = data.earnings.map(e => `
+        <div style="padding:16px;border-bottom:1px solid #e0e0e0;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:600;">$${(e.commission_dollars).toFixed(2)}</div>
+            <div style="font-size:0.85em;color:#666;">
+              From order $${(e.order_value_dollars).toFixed(2)} • ${e.referral_source}
+            </div>
+            <div style="font-size:0.8em;color:#999;">${new Date(e.created_at).toLocaleDateString()}</div>
+          </div>
+          <div style="text-align:right;">
+            <span style="display:inline-block;padding:4px 8px;background:${
+              e.status === 'paid' ? '#d4edda' : e.status === 'approved' ? '#fff3cd' : '#e2e3e5'
+            };color:${
+              e.status === 'paid' ? '#155724' : e.status === 'approved' ? '#856404' : '#383d41'
+            };border-radius:4px;font-size:0.8em;font-weight:600;">${e.status.toUpperCase()}</span>
+          </div>
+        </div>
+      `).join('');
+      
+      document.getElementById('earnings-list').innerHTML = html;
+      
+    } catch (err) {
+      console.error('Error loading earnings:', err);
+    }
+  }
+
+  async function loadMessages() {
+    try {
+      const res = await fetch('/api/dashboards/messages');
+      if (!res.ok) throw new Error('Failed to load messages');
+      
+      const data = await res.json();
+      
+      if (!data.messages || data.messages.length === 0) {
+        document.getElementById('messages-msg').textContent = 'No messages yet';
+        return;
+      }
+      
+      const html = data.messages.map(m => `
+        <div style="padding:16px;border-bottom:1px solid #e0e0e0;${m.is_read ? 'background:#f9f9f9;' : 'background:#f0f8ff;'}">
+          <div style="font-weight:600;${!m.is_read ? 'color:#0066cc;' : ''}margin-bottom:4px;">${m.subject}</div>
+          <div style="font-size:0.9em;color:#666;margin-bottom:8px;">${m.body.substring(0, 100)}${m.body.length > 100 ? '...' : ''}</div>
+          <div style="font-size:0.8em;color:#999;">${new Date(m.created_at).toLocaleDateString()}</div>
+        </div>
+      `).join('');
+      
+      document.getElementById('messages-list').innerHTML = html;
+      
+    } catch (err) {
+      console.error('Error loading messages:', err);
+    }
+  }
+
+  function switchTab(e, tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.style.borderBottom = '3px solid transparent');
+    
+    // Show selected tab
+    document.getElementById(`tab-${tabName}`).style.display = 'block';
+    e.target.style.borderBottom = '3px solid #000';
+  }
+
+  async function saveProfile(e) {
+    e.preventDefault();
+    
+    const data = {
+      display_name: document.getElementById('profile-display-name').value,
+      bio: document.getElementById('profile-bio').value,
+      instagram_handle: document.getElementById('profile-instagram').value,
+      tiktok_handle: document.getElementById('profile-tiktok').value,
+      website_url: document.getElementById('profile-website').value,
+    };
+    
+    try {
+      const res = await fetch('/api/dashboards/affiliate/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      
+      if (!res.ok) throw new Error('Update failed');
+      
+      alert('Profile updated successfully!');
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      alert('Failed to save profile');
+    }
+  }
+
+  function copyReferralLink() {
+    const link = document.getElementById('referral-link-input').value;
+    navigator.clipboard.writeText(link).then(() => {
+      alert('Link copied to clipboard!');
+    });
+  }
+
+  function shareReferralLink() {
+    const link = document.getElementById('referral-link-input').value;
+    if (navigator.share) {
+      navigator.share({
+        title: 'JONCHE Affiliate Program',
+        text: 'Join me on JONCHE and get exclusive drops!',
+        url: link,
+      });
+    } else {
+      copyReferralLink();
+    }
+  }
+
+  async function filterEarnings() {
+    loadEarnings();
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', initDashboard);
+</script>
+{% endblock %}

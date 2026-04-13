@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partner Admin - Jonche Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        /* ── Layout ────────────────────────────────────────────────────── */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #ffd700;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+
+        /* ── Navigation ────────────────────────────────────────────────── */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .nav-tabs button {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.2s;
+        }
+
+        .nav-tabs button.active {
+            color: #000;
+            border-bottom-color: #ffd700;
+        }
+
+        .nav-tabs button:hover {
+            color: #000;
+        }
+
+        /* ── Dashboard Section ─────────────────────────────────────────── */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* ── Summary Cards ─────────────────────────────────────────────── */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .summary-card h3 {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .summary-card .subtext {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        /* ── Tables ────────────────────────────────────────────────────── */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .table-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 {
+            font-size: 1.1em;
+        }
+
+        .table-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .table-filters select,
+        .table-filters input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: #f9f9f9;
+            border-bottom: 2px solid #ddd;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        /* ── Status Badges ─────────────────────────────────────────────── */
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .badge.active {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .badge.pending {
+            background-color: #fff9c4;
+            color: #f57f17;
+        }
+
+        .badge.approved {
+            background-color: #b2dfdb;
+            color: #00796b;
+        }
+
+        .badge.rejected {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+
+        .badge.suspended {
+            background-color: #eeeeee;
+            color: #616161;
+        }
+
+        .badge.draft {
+            background-color: #e1bee7;
+            color: #6a1b9a;
+        }
+
+        .badge.published {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        /* ── Buttons ────────────────────────────────────────────────────── */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #000;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #333;
+        }
+
+        .btn-secondary {
+            background-color: #f5f5f5;
+            color: #000;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+
+        .btn-success {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #45a049;
+        }
+
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #da190b;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85em;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* ── Forms ─────────────────────────────────────────────────────── */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.95em;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        /* ── Modal ────────────────────────────────────────────────────── */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal.open {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.4em;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-close:hover {
+            color: #000;
+        }
+
+        .modal-footer {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* ── Partner Details ────────────────────────────────────────────── */
+        .partner-detail-view {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .detail-row {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 20px;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .detail-value {
+            color: #333;
+        }
+
+        /* ── Earnings Chart ────────────────────────────────────────────── */
+        .earnings-row {
+            background: #f9f9f9;
+            padding: 12px 15px;
+            border-left: 4px solid #ffd700;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .earnings-row .status {
+            display: inline-block;
+            margin-right: 15px;
+        }
+
+        .earnings-row .amount {
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        /* ── Loading ────────────────────────────────────────────────────── */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ── Responsive ────────────────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+
+            .nav-tabs {
+                gap: 5px;
+            }
+
+            .nav-tabs button {
+                padding: 10px 15px;
+                font-size: 0.85em;
+            }
+
+            .detail-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>🖤 Partner Admin Portal</h1>
+            <p>Manage affiliates, referral partners, retail partners, and executives</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-item active" data-section="dashboard">Dashboard</button>
+            <button class="nav-item" data-section="applications">Applications</button>
+            <button class="nav-item" data-section="affiliates">Affiliates</button>
+            <button class="nav-item" data-section="referrals">Referral Partners</button>
+            <button class="nav-item" data-section="retail">Retail Partners</button>
+            <button class="nav-item" data-section="announcements">Announcements</button>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════ -->
+        <!-- DASHBOARD SECTION -->
+        <!-- ════════════════════════════════════════════════════════════════ -->
+        <div id="dashboard" class="section active">
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <h3>Total Affiliates</h3>
+                    <div class="value" id="total-affiliates">—</div>
+                    <div class="subtext" id="active-affiliates">— active</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Referral Partners</h3>
+                    <div class="value" id="total-referral-partners">—</div>
+                    <div class="subtext" id="active-referral-partners">— active</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Retail Partners</h3>
+                    <div class="value" id="total-retail-partners">—</div>
+                    <div class="subtext" id="active-retail-partners">— active</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Executives</h3>
+                    <div class="value" id="total-executives">—</div>
+                    <div class="subtext" id="active-executives">— active</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Paid Earnings</h3>
+                    <div class="value" id="total-paid">—</div>
+                    <div class="subtext">Commission payouts</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Pending Earnings</h3>
+                    <div class="value" id="total-pending">—</div>
+                    <div class="subtext">Awaiting approval</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Referral Value</h3>
+                    <div class="value" id="total-referral-value">—</div>
+                    <div class="subtext" id="funded-referrals">— funded</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════ -->
+        <!-- APPLICATIONS SECTION -->
+        <!-- ════════════════════════════════════════════════════════════════ -->
+        <div id="applications" class="section">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>Partner Applications</h3>
+                    <div class="table-filters">
+                        <select id="app-status-filter">
+                            <option value="">All Status</option>
+                            <option value="new">New</option>
+                            <option value="contacted">Contacted</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                        <select id="app-program-filter">
+                            <option value="">All Programs</option>
+                            <option value="affiliate_creators">Affiliate Creators</option>
+                            <option value="referral_network">Referral Network</option>
+                            <option value="retail_alliance">Retail Alliance</option>
+                            <option value="executives">Executives</option>
+                        </select>
+                        <button class="btn btn-secondary btn-sm" onclick="loadApplications()">Refresh</button>
+                    </div>
+                </div>
+                <table id="applications-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Program</th>
+                            <th>Status</th>
+                            <th>Applied</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════ -->
+        <!-- AFFILIATES SECTION -->
+        <!-- ════════════════════════════════════════════════════════════════ -->
+        <div id="affiliates" class="section">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>Affiliate Creators</h3>
+                    <div class="table-filters">
+                        <select id="aff-status-filter">
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="suspended">Suspended</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                        <button class="btn btn-secondary btn-sm" onclick="loadAffiliates()">Refresh</button>
+                    </div>
+                </div>
+                <table id="affiliates-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Total Earnings</th>
+                            <th>Pending</th>
+                            <th>Commission Rate</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════ -->
+        <!-- REFERRAL PARTNERS SECTION -->
+        <!-- ════════════════════════════════════════════════════════════════ -->
+        <div id="referrals" class="section">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>Referral Partners</h3>
+                    <div class="table-filters">
+                        <select id="ref-tier-filter">
+                            <option value="">All Tiers</option>
+                            <option value="bronze">Bronze</option>
+                            <option value="silver">Silver</option>
+                            <option value="gold">Gold</option>
+                        </select>
+                        <select id="ref-status-filter">
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="suspended">Suspended</option>
+                        </select>
+                        <button class="btn btn-secondary btn-sm" onclick="loadReferralPartners()">Refresh</button>
+                    </div>
+                </div>
+                <table id="referral-partners-table">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Contact</th>
+                            <th>Total Deal Value</th>
+                            <th>Tier</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════ -->
+        <!-- RETAIL PARTNERS SECTION -->
+        <!-- ════════════════════════════════════════════════════════════════ -->
+        <div id="retail" class="section">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>Retail Alliance Partners</h3>
+                    <div class="table-filters">
+                        <button class="btn btn-secondary btn-sm" onclick="loadRetailPartners()">Refresh</button>
+                    </div>
+                </div>
+                <table id="retail-partners-table">
+                    <thead>
+                        <tr>
+                            <th>Store Name</th>
+                            <th>Contact</th>
+                            <th>City/State</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════ -->
+        <!-- ANNOUNCEMENTS SECTION -->
+        <!-- ════════════════════════════════════════════════════════════════ -->
+        <div id="announcements" class="section">
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-primary" onclick="openAnnouncementModal()">+ New Announcement</button>
+            </div>
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>Partner Announcements</h3>
+                    <div class="table-filters">
+                        <select id="ann-status-filter">
+                            <option value="">All Status</option>
+                            <option value="draft">Draft</option>
+                            <option value="published">Published</option>
+                            <option value="archived">Archived</option>
+                        </select>
+                        <button class="btn btn-secondary btn-sm" onclick="loadAnnouncements()">Refresh</button>
+                    </div>
+                </div>
+                <table id="announcements-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Target Groups</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Published</th>
+                            <th>Expires</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- MODALS -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+
+    <!-- Application Detail Modal -->
+    <div id="applicationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Application Details</h2>
+                <button class="modal-close" onclick="closeModal('applicationModal')">&times;</button>
+            </div>
+            <div id="applicationDetails"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('applicationModal')">Close</button>
+                <button class="btn btn-success" onclick="autoCreateAccount()">Create Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Affiliate Detail Modal -->
+    <div id="affiliateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Affiliate Details</h2>
+                <button class="modal-close" onclick="closeModal('affiliateModal')">&times;</button>
+            </div>
+            <div id="affiliateDetails"></div>
+            <div style="margin-top: 20px;">
+                <h3>Recent Earnings</h3>
+                <div id="affiliateEarnings"></div>
+                <button class="btn btn-success btn-sm" onclick="approveAffiliateEarnings()">Approve Pending</button>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('affiliateModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Referral Partner Detail Modal -->
+    <div id="referralModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Referral Partner Details</h2>
+                <button class="modal-close" onclick="closeModal('referralModal')">&times;</button>
+            </div>
+            <div id="referralDetails"></div>
+            <div style="margin-top: 20px;">
+                <h3>Recent Referrals</h3>
+                <div id="partnerReferrals"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('referralModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcement Modal -->
+    <div id="announcementModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create/Edit Announcement</h2>
+                <button class="modal-close" onclick="closeModal('announcementModal')">&times;</button>
+            </div>
+            <form onsubmit="saveAnnouncement(event)">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="annTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Content</label>
+                    <textarea id="annContent" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Target Groups (comma-separated)</label>
+                    <input type="text" id="annTargetGroups" placeholder="affiliate_creators, referral_network, retail_alliance, executives">
+                </div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select id="annPriority">
+                        <option value="normal">Normal</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('announcementModal')">Cancel</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="saveDraftAnnouncement()">Save Draft</button>
+                    <button type="submit" class="btn btn-success">Publish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ──────────────────────────────────────────────────────────────────────────
+        // MODAL FUNCTIONS
+        // ──────────────────────────────────────────────────────────────────────────
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add("open");
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove("open");
+        }
+
+        // ──────────────────────────────────────────────────────────────────────────
+        // NAVIGATION
+        // ──────────────────────────────────────────────────────────────────────────
+
+        document.querySelectorAll(".nav-item").forEach(btn => {
+            btn.addEventListener("click", function() {
+                // Update active tab
+                document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+                this.classList.add("active");
+
+                // Show section
+                const sectionId = this.dataset.section;
+                document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+                document.getElementById(sectionId).classList.add("active");
+
+                // Load data
+                if (sectionId === "dashboard") {
+                    loadDashboard();
+                } else if (sectionId === "applications") {
+                    loadApplications();
+                } else if (sectionId === "affiliates") {
+                    loadAffiliates();
+                } else if (sectionId === "referrals") {
+                    loadReferralPartners();
+                } else if (sectionId === "retail") {
+                    loadRetailPartners();
+                } else if (sectionId === "announcements") {
+                    loadAnnouncements();
+                }
+            });
+        });
+
+        // ──────────────────────────────────────────────────────────────────────────
+        // DATA LOADING
+        // ──────────────────────────────────────────────────────────────────────────
+
+        async function loadDashboard() {
+            try {
+                const response = await fetch("/api/admin/partners/summary");
+                const data = await response.json();
+
+                document.getElementById("total-affiliates").textContent = data.partners.affiliates.total;
+                document.getElementById("active-affiliates").textContent = `${data.partners.affiliates.active} active`;
+                document.getElementById("total-referral-partners").textContent = data.partners.referral_partners.total;
+                document.getElementById("active-referral-partners").textContent = `${data.partners.referral_partners.active} active`;
+                document.getElementById("total-retail-partners").textContent = data.partners.retail_partners.total;
+                document.getElementById("active-retail-partners").textContent = `${data.partners.retail_partners.active} active`;
+                document.getElementById("total-executives").textContent = data.partners.executives.total;
+                document.getElementById("active-executives").textContent = `${data.partners.executives.active} active`;
+
+                const paidDollars = (data.earnings.total_paid_cents / 100).toFixed(2);
+                const pendingDollars = (data.earnings.total_pending_cents / 100).toFixed(2);
+                document.getElementById("total-paid").textContent = `$${paidDollars}`;
+                document.getElementById("total-pending").textContent = `$${pendingDollars}`;
+
+                const refValueDollars = (data.referrals.total_value_cents / 100).toFixed(0);
+                document.getElementById("total-referral-value").textContent = `$${refValueDollars}`;
+                document.getElementById("funded-referrals").textContent = `${data.referrals.funded_count} funded`;
+            } catch (error) {
+                console.error("Error loading dashboard:", error);
+            }
+        }
+
+        async function loadApplications() {
+            try {
+                const status = document.getElementById("app-status-filter")?.value || "";
+                const program = document.getElementById("app-program-filter")?.value || "";
+                const url = `/api/admin/partners/applications?status=${status}&program=${program}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const tbody = document.querySelector("#applications-table tbody");
+                tbody.innerHTML = data.applications.map(app => `
+                    <tr>
+                        <td>${app.full_name}</td>
+                        <td>${app.email}</td>
+                        <td>${app.program_type.replace(/_/g, " ")}</td>
+                        <td><span class="badge ${app.status}">${app.status}</span></td>
+                        <td>${new Date(app.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary btn-sm" onclick="viewApplication(${app.id})">View</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join("");
+            } catch (error) {
+                console.error("Error loading applications:", error);
+            }
+        }
+
+        async function loadAffiliates() {
+            try {
+                const status = document.getElementById("aff-status-filter")?.value || "";
+                const url = `/api/admin/partners/affiliates?status=${status}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const tbody = document.querySelector("#affiliates-table tbody");
+                tbody.innerHTML = data.affiliates.map(aff => `
+                    <tr>
+                        <td>${aff.display_name}</td>
+                        <td>${aff.email}</td>
+                        <td>$${(aff.total_earnings_cents / 100).toFixed(2)}</td>
+                        <td>$${(aff.pending_earnings_cents / 100).toFixed(2)}</td>
+                        <td>${aff.commission_rate_percent}%</td>
+                        <td><span class="badge ${aff.status}">${aff.status}</span></td>
+                        <td>${new Date(aff.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="viewAffiliate(${aff.id})">View</button>
+                        </td>
+                    </tr>
+                `).join("");
+            } catch (error) {
+                console.error("Error loading affiliates:", error);
+            }
+        }
+
+        async function loadReferralPartners() {
+            try {
+                const tier = document.getElementById("ref-tier-filter")?.value || "";
+                const status = document.getElementById("ref-status-filter")?.value || "";
+                const url = `/api/admin/partners/referral-partners?tier=${tier}&status=${status}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const tbody = document.querySelector("#referral-partners-table tbody");
+                tbody.innerHTML = data.referral_partners.map(ref => `
+                    <tr>
+                        <td>${ref.company_name}</td>
+                        <td>${ref.contact_name}</td>
+                        <td>$${(ref.total_deal_value_cents / 100).toFixed(0)}</td>
+                        <td><span class="badge">${ref.tier}</span></td>
+                        <td><span class="badge ${ref.status}">${ref.status}</span></td>
+                        <td>${new Date(ref.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="viewReferralPartner(${ref.id})">View</button>
+                        </td>
+                    </tr>
+                `).join("");
+            } catch (error) {
+                console.error("Error loading referral partners:", error);
+            }
+        }
+
+        async function loadRetailPartners() {
+            try {
+                const response = await fetch("/api/admin/partners/retail-partners");
+                const data = await response.json();
+
+                const tbody = document.querySelector("#retail-partners-table tbody");
+                tbody.innerHTML = data.retail_partners?.map(retail => `
+                    <tr>
+                        <td>${retail.store_name}</td>
+                        <td>${retail.contact_name}</td>
+                        <td>${retail.city || "—"}, ${retail.state || "—"}</td>
+                        <td><span class="badge ${retail.status}">${retail.status}</span></td>
+                        <td>${new Date(retail.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="viewRetailPartner(${retail.id})">View</button>
+                        </td>
+                    </tr>
+                `).join("") || "<tr><td colspan='6' style='text-align: center; padding: 40px;'>No retail partners yet</td></tr>";
+            } catch (error) {
+                console.error("Error loading retail partners:", error);
+            }
+        }
+
+        async function loadAnnouncements() {
+            try {
+                const status = document.getElementById("ann-status-filter")?.value || "";
+                const url = `/api/admin/partners/announcements?status=${status}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const tbody = document.querySelector("#announcements-table tbody");
+                tbody.innerHTML = data.announcements.map(ann => `
+                    <tr>
+                        <td>${ann.title}</td>
+                        <td>${ann.target_groups}</td>
+                        <td>${ann.priority}</td>
+                        <td><span class="badge ${ann.status}">${ann.status}</span></td>
+                        <td>${ann.published_at ? new Date(ann.published_at).toLocaleDateString() : "—"}</td>
+                        <td>${ann.expires_at ? new Date(ann.expires_at).toLocaleDateString() : "—"}</td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="editAnnouncement(${ann.id})">Edit</button>
+                        </td>
+                    </tr>
+                `).join("");
+            } catch (error) {
+                console.error("Error loading announcements:", error);
+            }
+        }
+
+        // ──────────────────────────────────────────────────────────────────────────
+        // DETAIL VIEW FUNCTIONS
+        // ──────────────────────────────────────────────────────────────────────────
+
+        async function viewApplication(appId) {
+            try {
+                const response = await fetch(`/api/admin/partners/applications/${appId}`);
+                const data = await response.json();
+
+                const details = `
+                    <div class="detail-row">
+                        <div class="detail-label">Name</div>
+                        <div class="detail-value">${data.full_name}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Email</div>
+                        <div class="detail-value">${data.email}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Program</div>
+                        <div class="detail-value">${data.program_type.replace(/_/g, " ")}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value"><span class="badge ${data.status}">${data.status}</span></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Business</div>
+                        <div class="detail-value">${data.business_name || "—"}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Phone</div>
+                        <div class="detail-value">${data.phone || "—"}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Location</div>
+                        <div class="detail-value">${data.city || "—"}, ${data.state || "—"}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Website/Social</div>
+                        <div class="detail-value">${data.website_or_social || "—"}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Notes</div>
+                        <div class="detail-value">${data.additional_notes || "—"}</div>
+                    </div>
+                `;
+
+                document.getElementById("applicationDetails").innerHTML = details;
+                window.currentApplicationId = appId;
+                openModal("applicationModal");
+            } catch (error) {
+                console.error("Error viewing application:", error);
+            }
+        }
+
+        async function viewAffiliate(affiliateId) {
+            try {
+                const response = await fetch(`/api/admin/partners/affiliates/${affiliateId}`);
+                const data = await response.json();
+                const aff = data.affiliate;
+
+                const details = `
+                    <div class="detail-row">
+                        <div class="detail-label">Name</div>
+                        <div class="detail-value">${aff.display_name}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Email</div>
+                        <div class="detail-value">${aff.email}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value"><span class="badge ${aff.status}">${aff.status}</span></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Total Earnings</div>
+                        <div class="detail-value">$${(aff.total_earnings_cents / 100).toFixed(2)}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Commission Rate</div>
+                        <div class="detail-value">${aff.commission_rate_percent}%</div>
+                    </div>
+                `;
+
+                document.getElementById("affiliateDetails").innerHTML = details;
+
+                // Load earnings
+                const earningsHtml = data.recent_earnings.map(e => `
+                    <div class="earnings-row">
+                        <span class="status"><span class="badge ${e.status}">${e.status}</span></span>
+                        <span class="amount">$${(e.commission_cents / 100).toFixed(2)}</span>
+                        <span>${new Date(e.created_at).toLocaleDateString()}</span>
+                    </div>
+                `).join("");
+                document.getElementById("affiliateEarnings").innerHTML = earningsHtml || "<p>No earnings yet.</p>";
+
+                window.currentAffiliateId = affiliateId;
+                openModal("affiliateModal");
+            } catch (error) {
+                console.error("Error viewing affiliate:", error);
+            }
+        }
+
+        async function viewReferralPartner(partnerId) {
+            try {
+                const response = await fetch(`/api/admin/partners/referral-partners/${partnerId}`);
+                const data = await response.json();
+                const ref = data.partner;
+
+                const details = `
+                    <div class="detail-row">
+                        <div class="detail-label">Company</div>
+                        <div class="detail-value">${ref.company_name}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Contact</div>
+                        <div class="detail-value">${ref.contact_name}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Email</div>
+                        <div class="detail-value">${ref.email}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Tier</div>
+                        <div class="detail-value">${ref.tier}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Total Deal Value</div>
+                        <div class="detail-value">$${(ref.total_deal_value_cents / 100).toFixed(0)}</div>
+                    </div>
+                `;
+
+                document.getElementById("referralDetails").innerHTML = details;
+
+                // Load referrals
+                const referralsHtml = data.recent_referrals.map(r => `
+                    <div class="earnings-row">
+                        <span class="status"><span class="badge ${r.status}">${r.status}</span></span>
+                        <span class="amount">$${(r.estimated_value_cents / 100).toFixed(0)}</span>
+                        <span>${new Date(r.created_at).toLocaleDateString()}</span>
+                    </div>
+                `).join("");
+                document.getElementById("partnerReferrals").innerHTML = referralsHtml || "<p>No referrals yet.</p>";
+
+                window.currentReferralPartnerId = partnerId;
+                openModal("referralModal");
+            } catch (error) {
+                console.error("Error viewing referral partner:", error);
+            }
+        }
+
+        // ──────────────────────────────────────────────────────────────────────────
+        // ACTION FUNCTIONS
+        // ──────────────────────────────────────────────────────────────────────────
+
+        async function autoCreateAccount() {
+            try {
+                const response = await fetch(`/api/admin/partners/applications/${window.currentApplicationId}/auto-create`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                });
+                const data = await response.json();
+                alert(data.message || "Account created successfully!");
+                closeModal("applicationModal");
+                loadApplications();
+            } catch (error) {
+                alert("Error creating account: " + error.message);
+            }
+        }
+
+        async function approveAffiliateEarnings() {
+            try {
+                const response = await fetch(`/api/admin/partners/affiliates/${window.currentAffiliateId}/approve-earnings`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ earning_ids: [] }), // Would be specific IDs in production
+                });
+                const data = await response.json();
+                alert(data.message);
+                loadAffiliates();
+            } catch (error) {
+                alert("Error approving earnings: " + error.message);
+            }
+        }
+
+        function openAnnouncementModal() {
+            document.getElementById("annTitle").value = "";
+            document.getElementById("annContent").value = "";
+            document.getElementById("annTargetGroups").value = "";
+            document.getElementById("annPriority").value = "normal";
+            openModal("announcementModal");
+        }
+
+        async function saveAnnouncement(event) {
+            event.preventDefault();
+            try {
+                const targetGroups = document.getElementById("annTargetGroups").value.split(",").map(g => g.trim());
+                const response = await fetch("/api/admin/partners/announcements", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        title: document.getElementById("annTitle").value,
+                        content: document.getElementById("annContent").value,
+                        target_groups: targetGroups,
+                        priority: document.getElementById("annPriority").value,
+                        publish: true,
+                    }),
+                });
+                const data = await response.json();
+                alert("Announcement published!");
+                closeModal("announcementModal");
+                loadAnnouncements();
+            } catch (error) {
+                alert("Error creating announcement: " + error.message);
+            }
+        }
+
+        async function saveDraftAnnouncement() {
+            try {
+                const targetGroups = document.getElementById("annTargetGroups").value.split(",").map(g => g.trim());
+                const response = await fetch("/api/admin/partners/announcements", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        title: document.getElementById("annTitle").value,
+                        content: document.getElementById("annContent").value,
+                        target_groups: targetGroups,
+                        priority: document.getElementById("annPriority").value,
+                        publish: false,
+                    }),
+                });
+                const data = await response.json();
+                alert("Announcement saved as draft!");
+                closeModal("announcementModal");
+                loadAnnouncements();
+            } catch (error) {
+                alert("Error saving draft: " + error.message);
+            }
+        }
+
+        // ──────────────────────────────────────────────────────────────────────────
+        // INITIALIZATION
+        // ──────────────────────────────────────────────────────────────────────────
+
+        document.addEventListener("DOMContentLoaded", function() {
+            loadDashboard();
+        });
+    </script>
+</body>
+</html>

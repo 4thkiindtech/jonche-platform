@@ -1,0 +1,461 @@
+{% extends "base_public.html" %}
+{% block title %}Executive Partnership Hub — JONCHE{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper" style="max-width:1400px;margin:0 auto;padding:20px;">
+  
+  <!-- Premium Header -->
+  <div style="background:linear-gradient(135deg,#000 0%,#222 100%);color:#fff;padding:32px;border-radius:12px;margin-bottom:32px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:0.85em;opacity:0.8;margin-bottom:8px;">EXECUTIVE PARTNERSHIP</div>
+        <div style="font-size:2.4em;font-weight:700;margin-bottom:4px;letter-spacing:-0.5px;">STRATEGIC OPPORTUNITIES</div>
+        <div style="font-size:0.95em;opacity:0.9;" id="executive-intro"></div>
+      </div>
+      <div style="text-align:right;">
+        <div id="profile-name" style="font-size:1.2em;font-weight:600;margin-bottom:12px;"></div>
+        <a href="/executive/logout" class="btn-ghost" style="color:#fff;border-color:#fff;">LOGOUT</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Performance Indicators -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:32px;">
+    <div class="premium-card">
+      <div class="stat-label">💼 Total Deal Value</div>
+      <div class="stat-value" id="total-deal-value">$0</div>
+      <div class="stat-subtext">All partnerships</div>
+    </div>
+    <div class="premium-card">
+      <div class="stat-label">💰 Commission Earned</div>
+      <div class="stat-value" id="commission-earned">$0</div>
+      <div class="stat-subtext">Paid to date</div>
+    </div>
+    <div class="premium-card">
+      <div class="stat-label">⏳ Pending Revenue</div>
+      <div class="stat-value" id="pending-revenue">$0</div>
+      <div class="stat-subtext">Approved deals</div>
+    </div>
+    <div class="premium-card">
+      <div class="stat-label">🎯 Territory</div>
+      <div class="stat-value" id="territory" style="font-size:1.2em;">—</div>
+      <div class="stat-subtext">Your region</div>
+    </div>
+  </div>
+
+  <!-- Premium Tab Navigation -->
+  <div style="display:flex;gap:20px;border-bottom:2px solid #e0e0e0;margin-bottom:32px;padding-bottom:12px;overflow-x:auto;">
+    <button class="premium-tab-btn active" data-tab="dashboard" onclick="switchTab(event, 'dashboard')" style="background:none;border:none;padding:8px 0;cursor:pointer;border-bottom:3px solid #000;font-weight:600;color:#000;white-space:nowrap;">
+      📊 Dashboard
+    </button>
+    <button class="premium-tab-btn" data-tab="opportunities" onclick="switchTab(event, 'opportunities')" style="background:none;border:none;padding:8px 0;cursor:pointer;border-bottom:3px solid transparent;font-weight:600;color:#666;white-space:nowrap;">
+      🎯 Territory Opportunities
+    </button>
+    <button class="premium-tab-btn" data-tab="deals" onclick="switchTab(event, 'deals')" style="background:none;border:none;padding:8px 0;cursor:pointer;border-bottom:3px solid transparent;font-weight:600;color:#666;white-space:nowrap;">
+      💼 My Deals
+    </button>
+    <button class="premium-tab-btn" data-tab="announcements" onclick="switchTab(event, 'announcements')" style="background:none;border:none;padding:8px 0;cursor:pointer;border-bottom:3px solid transparent;font-weight:600;color:#666;white-space:nowrap;">
+      📢 Partners & Updates
+    </button>
+    <button class="premium-tab-btn" data-tab="messages" onclick="switchTab(event, 'messages')" style="background:none;border:none;padding:8px 0;cursor:pointer;border-bottom:3px solid transparent;font-weight:600;color:#666;white-space:nowrap;">
+      💬 Direct Line
+    </button>
+    <button class="premium-tab-btn" data-tab="profile" onclick="switchTab(event, 'profile')" style="background:none;border:none;padding:8px 0;cursor:pointer;border-bottom:3px solid transparent;font-weight:600;color:#666;white-space:nowrap;">
+      👤 Profile
+    </button>
+  </div>
+
+  <!-- TAB: DASHBOARD -->
+  <div id="tab-dashboard" class="tab-content" style="display:block;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <!-- Left: Active Deals -->
+      <div>
+        <h3 style="margin-top:0;">🔥 Active Deals</h3>
+        <div id="active-deals-list" style="border:2px solid #f0f0f0;border-radius:8px;overflow:hidden;"></div>
+        <div id="active-deals-msg" class="muted" style="margin-top:12px;text-align:center;"></div>
+      </div>
+      <!-- Right: Recent Announcements -->
+      <div>
+        <h3 style="margin-top:0;">📢 Latest Announcements</h3>
+        <div id="announcements-preview" style="border:2px solid #f0f0f0;border-radius:8px;overflow:hidden;"></div>
+        <div id="announcements-msg" class="muted" style="margin-top:12px;text-align:center;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: OPPORTUNITIES -->
+  <div id="tab-opportunities" class="tab-content" style="display:none;">
+    <h3>Territory Opportunities</h3>
+    <div style="background:#f0f8ff;border-left:4px solid #0066cc;padding:16px;border-radius:4px;margin-bottom:24px;">
+      <p style="margin:0;font-size:0.95em;">
+        <strong>🎯 Your Territory:</strong> <span id="opp-territory">Not specified</span>
+        <br/>
+        <span style="font-size:0.85em;color:#666;">Connect with local retailers, influencers, and strategic partners in your region to unlock new deal opportunities.</span>
+      </p>
+    </div>
+    <div id="opportunities-list" style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;"></div>
+    <div id="opportunities-msg" class="muted" style="margin-top:12px;">Coming soon: Territory-specific opportunities</div>
+  </div>
+
+  <!-- TAB: MY DEALS -->
+  <div id="tab-deals" class="tab-content" style="display:none;">
+    <h3>All Partnerships</h3>
+    <div style="margin-bottom:16px;display:flex;gap:12px;">
+      <select id="deals-filter" onchange="loadDeals()" style="padding:8px 12px;border:1px solid #ddd;border-radius:4px;">
+        <option value="">All Deals</option>
+        <option value="submitted">Submitted</option>
+        <option value="under_review">Under Review</option>
+        <option value="approved">Approved</option>
+        <option value="funded">Funded</option>
+        <option value="closed">Closed</option>
+      </select>
+    </div>
+    <div id="deals-list" style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;"></div>
+    <div id="deals-msg" class="muted" style="margin-top:12px;"></div>
+  </div>
+
+  <!-- TAB: ANNOUNCEMENTS & UPDATES -->
+  <div id="tab-announcements" class="tab-content" style="display:none;">
+    <h3>Strategic Announcements</h3>
+    <div id="announcements-full-list" style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;"></div>
+    <div id="announcements-full-msg" class="muted" style="margin-top:12px;"></div>
+  </div>
+
+  <!-- TAB: MESSAGES -->
+  <div id="tab-messages" class="tab-content" style="display:none;">
+    <h3>Direct Communication Channel</h3>
+    <p class="muted" style="margin-bottom:16px;">Reach out to the JONCHE executive team directly.</p>
+    <div id="messages-list" style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;"></div>
+    <div id="messages-msg" class="muted" style="margin-top:12px;"></div>
+  </div>
+
+  <!-- TAB: PROFILE -->
+  <div id="tab-profile" class="tab-content" style="display:none;">
+    <h3>Executive Profile</h3>
+    <form id="profile-form" onsubmit="saveProfile(event)" style="display:flex;flex-direction:column;gap:16px;max-width:600px;">
+      <div>
+        <label style="display:block;margin-bottom:6px;font-weight:600;">Executive Name</label>
+        <input id="profile-exec-name" type="text" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" />
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:6px;font-weight:600;">Company</label>
+        <input id="profile-company" type="text" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" />
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:6px;font-weight:600;">Phone</label>
+        <input id="profile-phone" type="tel" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" />
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:6px;font-weight:600;">Territory/Region</label>
+        <input id="profile-territory" type="text" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" />
+      </div>
+      <button type="submit" class="btn-primary">SAVE PROFILE</button>
+    </form>
+  </div>
+
+</div>
+
+<style>
+  .dashboard-wrapper {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+  }
+  
+  .premium-card {
+    background: linear-gradient(135deg, #fff 0%, #f9f9f9 100%);
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+  }
+  
+  .premium-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+  }
+  
+  .stat-label {
+    font-size: 0.85em;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  
+  .stat-value {
+    font-size: 2em;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #000;
+  }
+  
+  .stat-subtext {
+    font-size: 0.75em;
+    color: #999;
+  }
+  
+  .tab-content {
+    animation: fadeIn 0.3s ease-in;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .btn-primary {
+    background: #000;
+    color: #fff;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95em;
+  }
+  
+  .btn-primary:hover {
+    background: #333;
+  }
+  
+  .btn-ghost {
+    background: none;
+    border: 1px solid #ddd;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-ghost:hover {
+    border-color: #000;
+    background: #f9f9f9;
+  }
+  
+  .page-title {
+    font-size: 2em;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  
+  .muted {
+    color: #999;
+    font-size: 0.9em;
+  }
+  
+  h3 {
+    margin-bottom: 16px;
+    font-size: 1.1em;
+    font-weight: 600;
+  }
+  
+  .deal-card {
+    padding: 16px;
+    border-bottom: 1px solid #e0e0e0;
+    transition: background 0.2s ease;
+  }
+  
+  .deal-card:hover {
+    background: #f9f9f9;
+  }
+  
+  .deal-card:last-child {
+    border-bottom: none;
+  }
+</style>
+
+<script>
+  let currentExecutiveId = null;
+  let currentExecutive = null;
+
+  async function initDashboard() {
+    try {
+      const res = await fetch('/api/dashboards/executive/dashboard');
+      if (!res.ok) throw new Error('Failed to load dashboard');
+      
+      const data = await res.json();
+      currentExecutive = data.profile;
+      currentExecutiveId = data.profile.id;
+      
+      document.getElementById('profile-name').textContent = data.profile.executive_name;
+      document.getElementById('executive-intro').textContent = `Welcome to your strategic partnership hub, ${data.profile.executive_name}.`;
+      
+      document.getElementById('total-deal-value').textContent = `$${(data.profile.total_deal_value_dollars / 1000000).toFixed(1)}M`;
+      document.getElementById('commission-earned').textContent = `$${(data.profile.total_commission_dollars).toFixed(0)}`;
+      document.getElementById('pending-revenue').textContent = `$${(data.profile.pending_commission_dollars).toFixed(0)}`;
+      document.getElementById('territory').textContent = data.profile.territory || 'Global';
+      
+      document.getElementById('opp-territory').textContent = data.profile.territory || 'Not specified';
+      
+      // Profile
+      document.getElementById('profile-exec-name').value = data.profile.executive_name || '';
+      document.getElementById('profile-company').value = data.profile.company_name || '';
+      document.getElementById('profile-phone').value = data.profile.phone || '';
+      document.getElementById('profile-territory').value = data.profile.territory || '';
+      
+      loadDeals();
+      loadAnnouncements();
+      loadMessages();
+    } catch (err) {
+      console.error('Dashboard init error:', err);
+    }
+  }
+
+  async function loadDeals() {
+    try {
+      const status = document.getElementById('deals-filter')?.value || '';
+      const url = `/api/dashboards/executive/deals${status ? `?status=${status}` : ''}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Failed to load deals');
+      
+      const data = await res.json();
+      
+      if (!data.deals || data.deals.length === 0) {
+        document.getElementById('deals-msg').textContent = 'No deals yet';
+        document.getElementById('active-deals-msg').textContent = 'No active deals';
+        return;
+      }
+      
+      const html = data.deals.map(d => `
+        <div class="deal-card">
+          <div style="font-weight:600;margin-bottom:4px;">${d.title}</div>
+          <div style="font-size:0.9em;color:#666;margin-bottom:8px;">${d.description || ''}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.9em;">
+            <div>
+              <span style="margin-right:12px;">💰 $${(d.estimated_value_dollars / 1000000).toFixed(1)}M</span>
+              <span>${d.commission_percent}% commission</span>
+            </div>
+            <span style="display:inline-block;padding:4px 8px;background:#f0f0f0;border-radius:4px;font-size:0.8em;font-weight:600;">${d.status.toUpperCase()}</span>
+          </div>
+        </div>
+      `).join('');
+      
+      document.getElementById('deals-list').innerHTML = html;
+      
+      // Also show active deals on dashboard
+      const activeDeals = data.deals.filter(d => ['submitted', 'approved', 'funded'].includes(d.status)).slice(0, 3);
+      if (activeDeals.length > 0) {
+        document.getElementById('active-deals-list').innerHTML = activeDeals.map(d => `
+          <div class="deal-card">
+            <div style="font-weight:600;margin-bottom:2px;">${d.title}</div>
+            <div style="font-size:0.8em;color:#999;">$${(d.estimated_value_dollars / 1000000).toFixed(1)}M</div>
+          </div>
+        `).join('');
+      } else {
+        document.getElementById('active-deals-msg').textContent = 'No active deals';
+      }
+    } catch (err) {
+      console.error('Error loading deals:', err);
+    }
+  }
+
+  async function loadAnnouncements() {
+    try {
+      const res = await fetch('/api/dashboards/announcements');
+      if (!res.ok) throw new Error('Failed to load announcements');
+      
+      const data = await res.json();
+      
+      if (!data.announcements || data.announcements.length === 0) {
+        document.getElementById('announcements-msg').textContent = 'No announcements';
+        document.getElementById('announcements-full-msg').textContent = 'No announcements';
+        return;
+      }
+      
+      // Preview on dashboard (first 2)
+      const previewHtml = data.announcements.slice(0, 2).map(a => `
+        <div style="padding:16px;border-bottom:1px solid #e0e0e0;">
+          <div style="font-weight:600;margin-bottom:4px;color:${a.priority === 'high' ? '#c00' : a.priority === 'critical' ? '#f00' : '#000'};">
+            ${a.title} ${a.priority !== 'normal' ? `(${a.priority.toUpperCase()})` : ''}
+          </div>
+          <div style="font-size:0.85em;color:#666;">${a.content.substring(0, 80)}...</div>
+        </div>
+      `).join('');
+      
+      document.getElementById('announcements-preview').innerHTML = previewHtml;
+      
+      // Full list
+      const fullHtml = data.announcements.map(a => `
+        <div style="padding:16px;border-bottom:1px solid #e0e0e0;">
+          <div style="font-weight:600;margin-bottom:4px;font-size:1em;">${a.title}</div>
+          <div style="font-size:0.9em;color:#666;margin-bottom:8px;line-height:1.5;">${a.content}</div>
+          <div style="display:flex;justify-content:space-between;font-size:0.8em;color:#999;">
+            <span>${new Date(a.published_at).toLocaleDateString()}</span>
+            <span style="display:inline-block;padding:2px 6px;background:#f0f0f0;border-radius:3px;">${a.priority.toUpperCase()}</span>
+          </div>
+        </div>
+      `).join('');
+      
+      document.getElementById('announcements-full-list').innerHTML = fullHtml;
+    } catch (err) {
+      console.error('Error loading announcements:', err);
+    }
+  }
+
+  async function loadMessages() {
+    try {
+      const res = await fetch('/api/dashboards/messages');
+      if (!res.ok) throw new Error('Failed to load messages');
+      
+      const data = await res.json();
+      
+      if (!data.messages || data.messages.length === 0) {
+        document.getElementById('messages-msg').textContent = 'No messages yet';
+        return;
+      }
+      
+      const html = data.messages.map(m => `
+        <div style="padding:16px;border-bottom:1px solid #e0e0e0;${m.is_read ? 'background:#f9f9f9;' : 'background:#f0f8ff;'}">
+          <div style="font-weight:600;margin-bottom:4px;">${m.subject}</div>
+          <div style="font-size:0.9em;color:#666;margin-bottom:8px;line-height:1.5;">${m.body}</div>
+          <div style="font-size:0.8em;color:#999;">${new Date(m.created_at).toLocaleDateString()}</div>
+        </div>
+      `).join('');
+      
+      document.getElementById('messages-list').innerHTML = html;
+    } catch (err) {
+      console.error('Error loading messages:', err);
+    }
+  }
+
+  function switchTab(e, tabName) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+    document.querySelectorAll('.premium-tab-btn').forEach(btn => {
+      btn.style.borderBottom = '3px solid transparent';
+      btn.style.color = '#666';
+    });
+    
+    document.getElementById(`tab-${tabName}`).style.display = 'block';
+    e.target.style.borderBottom = '3px solid #000';
+    e.target.style.color = '#000';
+  }
+
+  async function saveProfile(e) {
+    e.preventDefault();
+    
+    const data = {
+      executive_name: document.getElementById('profile-exec-name').value,
+      company_name: document.getElementById('profile-company').value,
+      phone: document.getElementById('profile-phone').value,
+      territory: document.getElementById('profile-territory').value,
+    };
+    
+    try {
+      const res = await fetch('/api/dashboards/executive/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      
+      if (!res.ok) throw new Error('Update failed');
+      alert('Profile updated successfully!');
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      alert('Failed to save profile');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', initDashboard);
+</script>
+{% endblock %}

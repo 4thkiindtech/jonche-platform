@@ -8,7 +8,7 @@ import io
 from flask import Blueprint, request, jsonify, Response
 
 from db import db
-from db.models import Member, Order, PreOrder, RetailerAllocation, Retailer, Drop
+from db.models import Member, Order, PreOrder, RetailerAllocation, Retailer, Drop, PartnerApplication
 from middleware.auth import require_admin
 from services.notifications import enqueue_email
 
@@ -83,6 +83,32 @@ def export_preorders():
         "created_at": p.created_at.isoformat(),
     } for p in preorders]
     return _csv_response("preorders.csv", rows)
+
+
+@admin_bp.route("/exports/partner_applications.csv", methods=["GET"])
+@require_admin
+def export_partner_applications():
+    rows_db = PartnerApplication.query.order_by(PartnerApplication.created_at.desc()).all()
+    rows = [{
+        "id": a.id,
+        "program_type": a.program_type,
+        "source": a.source or "",
+        "utm": a.utm or "",
+        "full_name": a.full_name,
+        "business_name": a.business_name or "",
+        "email": a.email,
+        "phone": a.phone or "",
+        "website_or_social": a.website_or_social or "",
+        "city": a.city or "",
+        "state": a.state or "",
+        "estimated_monthly_reach": a.estimated_monthly_reach or "",
+        "network_type": a.network_type or "",
+        "interested_in": a.interested_in or "",
+        "additional_notes": a.additional_notes or "",
+        "status": a.status,
+        "created_at": a.created_at.isoformat(),
+    } for a in rows_db]
+    return _csv_response("partner_applications.csv", rows)
 
 
 @admin_bp.route("/allocations/set", methods=["POST"])

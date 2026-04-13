@@ -1,0 +1,267 @@
+{% extends "base_public.html" %}
+
+{% block title %}Store - Jonche Platform{% endblock %}
+
+{% block content %}
+<div class="store-container">
+  <!-- ── Commercials Hero Carousel ────────────────────────────────────────── -->
+  {% if commercials %}
+  <section class="commercials-carousel mb-5">
+    <div id="carouselCommercials" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+      <div class="carousel-inner">
+        {% for commercial in commercials %}
+        <div class="carousel-item {% if loop.first %}active{% endif %}">
+          {% if commercial.thumbnail_url %}
+          <img src="{{ commercial.thumbnail_url }}" class="d-block w-100" alt="{{ commercial.title }}">
+          {% else %}
+          <div class="bg-dark text-white d-flex align-items-center justify-content-center" style="min-height: 400px;">
+            <div class="text-center">
+              <h3>{{ commercial.title }}</h3>
+              <p>{{ commercial.description or 'Watch our latest commercial' }}</p>
+            </div>
+          </div>
+          {% endif %}
+          
+          <!-- Video Overlay (click to play) -->
+          <div class="video-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" 
+               style="background: rgba(0,0,0,0.3); cursor: pointer; display: none;" 
+               data-commercial-id="{{ commercial.id }}"
+               data-video-url="{{ commercial.video_url }}">
+            <button class="btn btn-light btn-lg rounded-circle" style="width: 80px; height: 80px;">
+              <i class="fas fa-play"></i>
+            </button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      
+      <!-- Carousel Controls -->
+      <button class="carousel-control-prev" type="button" data-bs-target="#carouselCommercials" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#carouselCommercials" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+      </button>
+
+      <!-- Indicators -->
+      <div class="carousel-indicators">
+        {% for commercial in commercials %}
+        <button type="button" data-bs-target="#carouselCommercials" data-bs-slide-to="{{ loop.index0 }}" 
+                class="{% if loop.first %}active{% endif %}" aria-current="{% if loop.first %}true{% endif %}"></button>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Video Player Modal -->
+  <div class="modal fade" id="videoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="videoTitle">Commercial</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <video id="videoPlayer" controls style="width: 100%; border-radius: 8px;">
+            <source src="" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Categories Navigation ────────────────────────────────────────────── -->
+  {% if categories %}
+  <nav class="category-nav mb-5 border-bottom pb-3">
+    <div class="d-flex overflow-x-auto gap-3" style="flex-wrap: nowrap; overflow-x: auto;">
+      <a href="/store/products" class="btn btn-outline-primary text-nowrap">All Products</a>
+      {% for category in categories %}
+      <a href="/store/products?category_id={{ category.id }}" class="btn btn-outline-secondary text-nowrap">
+        {{ category.name }}
+      </a>
+      {% endfor %}
+    </div>
+  </nav>
+  {% endif %}
+
+  <!-- ── Featured Products ────────────────────────────────────────────────── -->
+  <section class="featured-products">
+    <h2 class="mb-4">Featured Products</h2>
+    
+    {% if featured_products %}
+    <div class="row g-4">
+      {% for product in featured_products %}
+      <div class="col-md-6 col-lg-4">
+        <div class="product-card h-100 border rounded-3 overflow-hidden hover-lift">
+          <!-- Product Image -->
+          <div class="product-image bg-light position-relative" style="height: 250px; overflow: hidden;">
+            {% if product.primary_image %}
+            <img src="{{ product.primary_image.image_url }}" 
+                 alt="{{ product.primary_image.alt_text }}"
+                 class="w-100 h-100 object-fit-cover">
+            {% else %}
+            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-secondary text-white">
+              <i class="fas fa-image fa-3x opacity-50"></i>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Product Info -->
+          <div class="p-3">
+            <p class="text-muted small mb-1">{{ product.category_name or 'Product' }}</p>
+            <h5 class="product-name mb-2">
+              <a href="/store/product/{{ product.id }}" class="text-decoration-none text-dark">
+                {{ product.name }}
+              </a>
+            </h5>
+            <p class="text-muted small mb-3">{{ product.description[:100] if product.description else 'Quality product' }}...</p>
+            
+            <!-- Price & Stock -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <p class="h5 mb-0">${{ "%.2f" | format(product.base_price_dollars) }}</p>
+                {% if product.total_quantity > 0 %}
+                <p class="text-success small">{{ product.total_quantity }} in stock</p>
+                {% else %}
+                <p class="text-danger small">Out of stock</p>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- View Details Button -->
+            <a href="/store/product/{{ product.id }}" class="btn btn-primary w-100">
+              View Details
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Browse All Link -->
+    <div class="text-center mt-5">
+      <a href="/store/products" class="btn btn-lg btn-outline-primary">
+        Browse All Products
+      </a>
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+      <i class="fas fa-info-circle"></i> No products available yet.
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- ── Call to Action ───────────────────────────────────────────────────── -->
+  <section class="cta-section bg-dark text-white rounded-3 p-5 mt-5 text-center">
+    <h2 class="mb-3">Ready to Explore?</h2>
+    <p class="fs-5 mb-4">Discover our latest collections and exclusive products.</p>
+    <a href="/store/products" class="btn btn-primary btn-lg">
+      Start Shopping <i class="fas fa-arrow-right ms-2"></i>
+    </a>
+  </section>
+</div>
+
+<style>
+.store-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.commercials-carousel {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-height: 400px;
+}
+
+.carousel-inner img {
+  object-fit: cover;
+  height: 400px;
+}
+
+.video-overlay:hover {
+  display: flex !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+}
+
+.category-nav {
+  -webkit-overflow-scrolling: touch;
+}
+
+.product-card {
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.product-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px);
+}
+
+.product-image {
+  position: relative;
+}
+
+.cta-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+@media (max-width: 768px) {
+  .commercials-carousel {
+    min-height: 250px;
+  }
+  
+  .carousel-inner img {
+    height: 250px;
+  }
+
+  .store-container {
+    padding: 1rem 0.5rem;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Setup video player modal
+  const videoModal = new bootstrap.Modal(document.getElementById('videoModal'), {});
+  
+  // Handle commercial video play
+  document.querySelectorAll('.video-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function() {
+      const videoUrl = this.dataset.videoUrl;
+      const commercialId = this.dataset.commercialId;
+      
+      const videoPlayer = document.getElementById('videoPlayer');
+      videoPlayer.src = videoUrl;
+      
+      videoModal.show();
+    });
+  });
+
+  // Show video overlay on hover
+  document.querySelectorAll('.carousel-item').forEach(item => {
+    item.addEventListener('mouseenter', function() {
+      const overlay = this.querySelector('.video-overlay');
+      if (overlay) {
+        overlay.style.display = 'flex';
+      }
+    });
+    
+    item.addEventListener('mouseleave', function() {
+      const overlay = this.querySelector('.video-overlay');
+      if (overlay) {
+        overlay.style.display = 'none';
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

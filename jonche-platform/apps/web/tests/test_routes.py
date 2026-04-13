@@ -2,6 +2,9 @@
 import pytest
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+# Avoid collision with apps/api/app.py which also imports as module name "app"
+# when the full test suite runs.
+sys.modules.pop("app", None)
 from app import app
 
 

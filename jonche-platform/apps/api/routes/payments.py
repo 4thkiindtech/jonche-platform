@@ -6,7 +6,7 @@ import os
 
 from flask import Blueprint, request, jsonify, g
 from db import db
-from db.models import Order, OrderItem, CheckoutLock, Drop, PreOrder
+from db.models import Order, OrderItem, CheckoutLock, Drop, PreOrder, StoreOrder
 from middleware.auth import require_admin, require_member
 from services.stripe_client import (
     StripeError,
@@ -15,6 +15,7 @@ from services.stripe_client import (
     verify_webhook_signature,
 )
 from services.order_finalizer import finalize_order, mark_refunded
+from services.store_order_finalizer import finalize_store_order, mark_store_order_payment_failed
 
 payments_bp = Blueprint("payments", __name__)
 
@@ -193,9 +194,16 @@ def stripe_webhook():
         if order and order.status == "pending":
             finalize_order(order)
 
+        # Store order confirmation
+        metadata = obj.get("metadata") or {}
+        if metadata.get("type") == "store_order":
+            store_order = StoreOrder.query.filter_by(stripe_payment_intent=pi_id).first()
+            if store_order and store_order.payment_status == "pending":
+                finalize_store_order(store_order)
+
         # Preorder confirmation
-        if (obj.get("metadata") or {}).get("type") == "preorder":
-            pid = (obj.get("metadata") or {}).get("preorder_id")
+        if metadata.get("type") == "preorder":
+            pid = metadata.get("preorder_id")
             if pid:
                 preorder = PreOrder.query.get(int(pid))
                 if preorder and preorder.status == "pending":
@@ -210,6 +218,13 @@ def stripe_webhook():
             order = Order.query.filter_by(stripe_payment_intent=pi_id).first()
             if order:
                 mark_refunded(order) if event_type == "charge.refunded" else None
+            
+            # Handle store order failures
+            store_order = StoreOrder.query.filter_by(stripe_payment_intent=pi_id).first()
+            if store_order and event_type == "payment_intent.payment_failed":
+                reason = obj.get("last_payment_error", {}).get("message") or "Payment failed"
+                mark_store_order_payment_failed(store_order, reason)
+        
         return jsonify({"ok": True}), 200
 
     return jsonify({"ok": True}), 200

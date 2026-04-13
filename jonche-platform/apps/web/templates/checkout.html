@@ -1,0 +1,303 @@
+{% extends "base_public.html" %}
+
+{% block title %}Checkout - Jonche Store{% endblock %}
+
+{% block content %}
+<div class="container checkout-page py-5">
+  <div class="row g-5">
+    <!-- ── Checkout Form ────────────────────────────────────────────────────── -->
+    <div class="col-lg-7">
+      <h2 class="mb-4"><i class="fas fa-credit-card"></i> Checkout</h2>
+
+      <form id="checkoutForm" class="needs-validation" novalidate>
+        <!-- Shipping Information -->
+        <div class="card mb-4">
+          <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-truck"></i> Shipping Information</h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="shippingName" class="form-label">Full Name</label>
+              <input type="text" class="form-control" id="shippingName" required>
+              <div class="invalid-feedback">Name is required</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="shippingEmail" class="form-label">Email</label>
+              <input type="email" class="form-control" id="shippingEmail" required>
+              <div class="invalid-feedback">Valid email is required</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="shippingPhone" class="form-label">Phone Number</label>
+              <input type="tel" class="form-control" id="shippingPhone" required>
+              <div class="invalid-feedback">Phone number is required</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="shippingAddress" class="form-label">Street Address</label>
+              <input type="text" class="form-control" id="shippingAddress" required>
+              <div class="invalid-feedback">Address is required</div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="shippingCity" class="form-label">City</label>
+                <input type="text" class="form-control" id="shippingCity" required>
+                <div class="invalid-feedback">City is required</div>
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label for="shippingState" class="form-label">State</label>
+                <input type="text" class="form-control" id="shippingState" required>
+                <div class="invalid-feedback">State is required</div>
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label for="shippingZip" class="form-label">ZIP Code</label>
+                <input type="text" class="form-control" id="shippingZip" required>
+                <div class="invalid-feedback">ZIP code is required</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Information -->
+        <div class="card mb-4">
+          <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-lock"></i> Payment Information</h5>
+          </div>
+          <div class="card-body">
+            <div id="cardElement" class="form-control p-3 mb-3" style="height: 40px; border-radius: 4px;">
+              <!-- Stripe Card Element will go here -->
+            </div>
+            <div id="cardErrors" class="text-danger small" role="alert"></div>
+            <p class="small text-muted mt-2">
+              <i class="fas fa-shield-alt"></i> Your payment is secure and encrypted
+            </p>
+          </div>
+        </div>
+
+        <!-- Billing Address -->
+        <div class="card mb-4">
+          <div class="card-header bg-light">
+            <div class="form-check mb-0">
+              <input type="checkbox" class="form-check-input" id="sameAsShipping" checked>
+              <label class="form-check-label" for="sameAsShipping">
+                Same as shipping address
+              </label>
+            </div>
+          </div>
+          <div class="card-body" id="billingFields" style="display: none;">
+            <p class="text-muted">Enter different billing address</p>
+            <!-- Similar fields as shipping (omitted for brevity) -->
+          </div>
+        </div>
+
+        <!-- Terms & Conditions -->
+        <div class="form-check mb-4">
+          <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+          <label class="form-check-label" for="agreeTerms">
+            I agree to the <a href="#" class="text-decoration-none">Terms & Conditions</a> and 
+            <a href="#" class="text-decoration-none">Privacy Policy</a>
+          </label>
+          <div class="invalid-feedback">You must agree to continue</div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary btn-lg w-100 mb-2" id="submitBtn">
+          <i class="fas fa-lock"></i> Complete Purchase
+        </button>
+        <p class="text-muted text-center small">
+          <i class="fas fa-shield-alt"></i> Secured by Stripe
+        </p>
+      </form>
+    </div>
+
+    <!-- ── Order Summary ────────────────────────────────────────────────────── -->
+    <div class="col-lg-5">
+      <div class="card shadow-sm sticky-top" style="top: 80px;">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">Order Summary</h5>
+        </div>
+        <div class="card-body">
+          <div id="orderItems">
+            <div class="text-center py-4">
+              <div class="spinner-border spinner-border-sm text-primary"></div>
+            </div>
+          </div>
+
+          <div class="order-total">
+            <div class="d-flex justify-content-between py-2 border-top mt-3 pt-3">
+              <span>Subtotal</span>
+              <strong id="subtotal">$0.00</strong>
+            </div>
+            <div class="d-flex justify-content-between py-2">
+              <span>Tax (8%)</span>
+              <strong id="tax">$0.00</strong>
+            </div>
+            <div class="d-flex justify-content-between py-2">
+              <span>Shipping</span>
+              <strong id="shipping">FREE</strong>
+            </div>
+            <div class="d-flex justify-content-between py-3 border-top border-bottom" style="font-size: 1.25rem;">
+              <span>Total</span>
+              <strong class="text-primary" id="total">$0.00</strong>
+            </div>
+          </div>
+
+          <!-- Additional Info -->
+          <div class="alert alert-info mt-4 small" role="alert">
+            <i class="fas fa-check-circle"></i> <strong>Free shipping</strong> on orders over $50
+          </div>
+          <div class="alert alert-success mt-2 small" role="alert">
+            <i class="fas fa-lock"></i> Encrypted and secure payment
+          </div>
+
+          <!-- Links -->
+          <div class="mt-4">
+            <a href="/store/cart" class="btn btn-outline-secondary btn-sm w-100">
+              <i class="fas fa-arrow-left"></i> Back to Cart
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.checkout-page {
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+#cardElement {
+  border: 1px solid #ced4da;
+}
+
+@media (max-width: 868px) {
+  .sticky-top {
+    position: relative;
+    top: auto;
+  }
+}
+</style>
+
+<script>
+// Note: In a real implementation, you would:
+// 1. Load Stripe.js
+// 2. Create payment intent on backend
+// 3. Handle card payment via Stripe
+// 4. Process order completion
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadOrderSummary();
+  
+  document.getElementById('sameAsShipping').addEventListener('change', function() {
+    document.getElementById('billingFields').style.display = 
+      this.checked ? 'none' : 'block';
+  });
+
+  document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Validate form
+    if (!this.checkValidity() === false) {
+      e.stopPropagation();
+    }
+
+    this.classList.add('was-validated');
+
+    if (this.checkValidity() !== false) {
+      completeCheckout();
+    }
+  });
+});
+
+function loadOrderSummary() {
+  fetch('/api/store/cart', {
+    credentials: 'include'
+  })
+  .then(res => res.json())
+  .then(data => {
+    renderOrderSummary(data);
+  })
+  .catch(err => console.error('Failed to load cart:', err));
+}
+
+function renderOrderSummary(cart) {
+  const subtotal = cart.total_dollars;
+  const tax = subtotal * 0.08;
+  const shipping = subtotal > 50 ? 0 : 9.99;
+  const total = subtotal + tax + shipping;
+
+  // Items
+  const itemsHtml = (cart.items || []).map(item => `
+    <div class="d-flex justify-content-between align-items-center py-2 border-bottom small">
+      <div>
+        <div>${item.product_name}</div>
+        ${item.variant_option ? '<div class="text-muted small">' + item.variant_option + '</div>' : ''}
+      </div>
+      <div class="text-end">
+        <div>${item.quantity}x $${(item.unit_price_dollars).toFixed(2)}</div>
+        <strong>$${(item.item_total_dollars).toFixed(2)}</strong>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('orderItems').innerHTML = itemsHtml;
+  document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
+  document.getElementById('tax').textContent = '$' + tax.toFixed(2);
+  document.getElementById('shipping').textContent = shipping === 0 ? 'FREE' : '$' + shipping.toFixed(2);
+  document.getElementById('total').textContent = '$' + total.toFixed(2);
+}
+
+function completeCheckout() {
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+  const data = {
+    shipping_name: document.getElementById('shippingName').value,
+    shipping_address: document.getElementById('shippingAddress').value + ', ' +
+                      document.getElementById('shippingCity').value + ', ' +
+                      document.getElementById('shippingState').value + ' ' +
+                      document.getElementById('shippingZip').value,
+    shipping_email: document.getElementById('shippingEmail').value,
+    stripe_payment_intent: 'pi_mock_' + Math.random().toString(36).substr(2, 9)
+  };
+
+  fetch('/api/store/order', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+    credentials: 'include'
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.order_id) {
+      window.location.href = '/store/order-success?order_id=' + data.order_id;
+    } else {
+      throw new Error('No order ID returned');
+    }
+  })
+  .catch(err => {
+    console.error('Checkout failed:', err);
+    alert('Checkout failed. Please try again.');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-lock"></i> Complete Purchase';
+  });
+}
+</script>
+{% endblock %}

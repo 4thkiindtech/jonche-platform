@@ -1,0 +1,479 @@
+{% extends "base.html" %}
+
+{% block title %}Store Management - Admin{% endblock %}
+
+{% block content %}
+<div class="admin-store-container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-store"></i> Store Management</h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProductModal">
+      <i class="fas fa-plus"></i> New Product
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-4" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button">
+        <i class="fas fa-box"></i> Products
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories" type="button">
+        <i class="fas fa-tags"></i> Categories
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="commercials-tab" data-bs-toggle="tab" data-bs-target="#commercials" type="button">
+        <i class="fas fa-video"></i> Commercials
+      </button>
+    </li>
+  </ul>
+
+  <!-- Tab Content -->
+  <div class="tab-content">
+    <!-- ── Products Tab ────────────────────────────────────────────────────── -->
+    <div class="tab-pane fade show active" id="products" role="tabpanel">
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <input type="text" id="productSearch" class="form-control" placeholder="Search products...">
+        </div>
+        <div class="col-md-6">
+          <select id="categoryFilter" class="form-select">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover caption-top" id="productsTable">
+          <caption>All Products</caption>
+          <thead class="table-light">
+            <tr>
+              <th>SKU</th>
+              <th>Product Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="productsBody">
+            <tr>
+              <td colspan="7" class="text-center py-4">
+                <span class="spinner-border spinner-border-sm text-primary me-2"></span>
+                Loading products...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Categories Tab ──────────────────────────────────────────────────── -->
+    <div class="tab-pane fade" id="categories" role="tabpanel">
+      <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#newCategoryModal">
+        <i class="fas fa-plus"></i> New Category
+      </button>
+
+      <div class="row g-3" id="categoriesGrid">
+        <div class="col-12 text-center py-4">
+          <span class="spinner-border spinner-border-sm text-primary me-2"></span>
+          Loading categories...
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Commercials Tab ─────────────────────────────────────────────────── -->
+    <div class="tab-pane fade" id="commercials" role="tabpanel">
+      <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#newCommercialModal">
+        <i class="fas fa-plus"></i> New Commercial
+      </button>
+
+      <div class="row g-3" id="commercialsGrid">
+        <div class="col-12 text-center py-4">
+          <span class="spinner-border spinner-border-sm text-primary me-2"></span>
+          Loading commercials...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modals ──────────────────────────────────────────────────────────────── -->
+
+<!-- New Product Modal -->
+<div class="modal fade" id="newProductModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-box"></i> Create New Product</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="newProductForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="productSku" class="form-label">SKU *</label>
+            <input type="text" class="form-control" id="productSku" required>
+          </div>
+          <div class="mb-3">
+            <label for="productName" class="form-label">Product Name *</label>
+            <input type="text" class="form-control" id="productName" required>
+          </div>
+          <div class="mb-3">
+            <label for="productCategory" class="form-label">Category *</label>
+            <select class="form-select" id="productCategory" required>
+              <option value="">Select a category...</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="productPrice" class="form-label">Base Price ($) *</label>
+            <input type="number" class="form-control" id="productPrice" step="0.01" required>
+          </div>
+          <div class="mb-3">
+            <label for="productDescription" class="form-label">Description</label>
+            <textarea class="form-control" id="productDescription" rows="3"></textarea>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="productAvailable" checked>
+            <label class="form-check-label" for="productAvailable">Available</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- New Category Modal -->
+<div class="modal fade" id="newCategoryModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-tags"></i> Create New Category</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="newCategoryForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="categoryName" class="form-label">Category Name *</label>
+            <input type="text" class="form-control" id="categoryName" required>
+          </div>
+          <div class="mb-3">
+            <label for="categoryDescription" class="form-label">Description</label>
+            <textarea class="form-control" id="categoryDescription" rows="2"></textarea>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="categoryActive" checked>
+            <label class="form-check-label" for="categoryActive">Active</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Category</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- New Commercial Modal -->
+<div class="modal fade" id="newCommercialModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-video"></i> Create New Commercial</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="newCommercialForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="commercialTitle" class="form-label">Title *</label>
+            <input type="text" class="form-control" id="commercialTitle" required>
+          </div>
+          <div class="mb-3">
+            <label for="commercialDescription" class="form-label">Description</label>
+            <textarea class="form-control" id="commercialDescription" rows="2"></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="commercialVideoUrl" class="form-label">Video URL *</label>
+            <input type="url" class="form-control" id="commercialVideoUrl" required>
+          </div>
+          <div class="mb-3">
+            <label for="commercialThumbnailUrl" class="form-label">Thumbnail URL</label>
+            <input type="url" class="form-control" id="commercialThumbnailUrl">
+          </div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="commercialActive" checked>
+            <label class="form-check-label" for="commercialActive">Active</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Commercial</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+.admin-store-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+.modal-content {
+  border-radius: 8px;
+}
+
+.btn-action {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+</style>
+
+<script>
+// Load initial data
+document.addEventListener('DOMContentLoaded', function() {
+  loadCategories();
+  loadProducts();
+  loadCommercials();
+
+  // Form submissions
+  document.getElementById('newProductForm').addEventListener('submit', createProduct);
+  document.getElementById('newCategoryForm').addEventListener('submit', createCategory);
+  document.getElementById('newCommercialForm').addEventListener('submit', createCommercial);
+});
+
+function loadCategories() {
+  fetch('/api/products/admin/categories')
+    .then(res => res.json())
+    .then(data => {
+      // Load category select options
+      const select = document.getElementById('productCategory');
+      const startOpts = select.innerHTML;
+      select.innerHTML = startOpts;
+      data.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.id;
+        opt.textContent = cat.name;
+        select.appendChild(opt);
+      });
+
+      // Load categories grid
+      renderCategories(data);
+    })
+    .catch(err => console.error('Failed to load categories:', err));
+}
+
+function loadProducts() {
+  fetch('/api/products/admin/products?per_page=50')
+    .then(res => res.json())
+    .then(data => renderProducts(data.items || []))
+    .catch(err => console.error('Failed to load products:', err));
+}
+
+function loadCommercials() {
+  fetch('/api/products/admin/commercials')
+    .then(res => res.json())
+    .then(data => renderCommercials(data))
+    .catch(err => console.error('Failed to load commercials:', err));
+}
+
+function renderProducts(items) {
+  const tbody = document.getElementById('productsBody');
+  tbody.innerHTML = items.map(product => `
+    <tr>
+      <td><code>${product.sku}</code></td>
+      <td>${product.name}</td>
+      <td>${product.category_name || '-'}</td>
+      <td>$${product.base_price_dollars.toFixed(2)}</td>
+      <td>${product.total_quantity || 0}</td>
+      <td>
+        <span class="badge ${product.is_available ? 'bg-success' : 'bg-danger'}">
+          ${product.is_available ? 'Available' : 'Unavailable'}
+        </span>
+      </td>
+      <td>
+        <button class="btn btn-sm btn-outline-primary btn-action" onclick="editProduct(${product.id})">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="btn btn-sm btn-outline-danger btn-action" onclick="deleteProduct(${product.id})">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderCategories(items) {
+  const grid = document.getElementById('categoriesGrid');
+  grid.innerHTML = items.map(cat => `
+    <div class="col-md-6 col-lg-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">${cat.name}</h5>
+          <p class="card-text text-muted small">${cat.description || 'No description'}</p>
+          <p class="small mb-0"><strong>${cat.product_count}</strong> products</p>
+          <div class="mt-3">
+            <button class="btn btn-sm btn-outline-primary" onclick="editCategory(${cat.id})">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(${cat.id})">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderCommercials(items) {
+  const grid = document.getElementById('commercialsGrid');
+  grid.innerHTML = items.map(comm => `
+    <div class="col-md-6">
+      <div class="card">
+        <div class="ratio ratio-16x9">
+          <img src="${comm.thumbnail_url || '/static/images/video-placeholder.png'}" alt="${comm.title}" class="card-img-top">
+        </div>
+        <div class="card-body">
+          <h5 class="card-title">${comm.title}</h5>
+          <p class="card-text text-muted small">${comm.description || 'No description'}</p>
+          <p class="small mb-2">
+            <span class="badge ${comm.is_active ? 'bg-success' : 'bg-secondary'}">
+              ${comm.is_active ? 'Active' : 'Inactive'}
+            </span>
+          </p>
+          <div>
+            <button class="btn btn-sm btn-outline-primary" onclick="editCommercial(${comm.id})">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteCommercial(${comm.id})">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function createProduct(e) {
+  e.preventDefault();
+  const data = {
+    sku: document.getElementById('productSku').value,
+    name: document.getElementById('productName').value,
+    category_id: parseInt(document.getElementById('productCategory').value),
+    base_price: Math.round(parseFloat(document.getElementById('productPrice').value) * 100),
+    description: document.getElementById('productDescription').value,
+    is_available: document.getElementById('productAvailable').checked
+  };
+
+  fetch('/api/products/admin/products', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(res => res.json())
+  .then(() => {
+    bootstrap.Modal.getInstance(document.getElementById('newProductModal')).hide();
+    loadProducts();
+    document.getElementById('newProductForm').reset();
+    alert('Product created successfully!');
+  })
+  .catch(err => alert('Failed to create product: ' + err));
+}
+
+function createCategory(e) {
+  e.preventDefault();
+  const data = {
+    name: document.getElementById('categoryName').value,
+    description: document.getElementById('categoryDescription').value,
+    is_active: document.getElementById('categoryActive').checked
+  };
+
+  fetch('/api/products/admin/categories', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(res => res.json())
+  .then(() => {
+    bootstrap.Modal.getInstance(document.getElementById('newCategoryModal')).hide();
+    loadCategories();
+    document.getElementById('newCategoryForm').reset();
+    alert('Category created successfully!');
+  })
+  .catch(err => alert('Failed to create category: ' + err));
+}
+
+function createCommercial(e) {
+  e.preventDefault();
+  const data = {
+    title: document.getElementById('commercialTitle').value,
+    description: document.getElementById('commercialDescription').value,
+    video_url: document.getElementById('commercialVideoUrl').value,
+    thumbnail_url: document.getElementById('commercialThumbnailUrl').value,
+    is_active: document.getElementById('commercialActive').checked
+  };
+
+  fetch('/api/products/admin/commercials', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(res => res.json())
+  .then(() => {
+    bootstrap.Modal.getInstance(document.getElementById('newCommercialModal')).hide();
+    loadCommercials();
+    document.getElementById('newCommercialForm').reset();
+    alert('Commercial created successfully!');
+  })
+  .catch(err => alert('Failed to create commercial: ' + err));
+}
+
+function editProduct(id) {
+  alert('Edit product ' + id + ' - coming soon');
+}
+
+function deleteProduct(id) {
+  if (!confirm('Delete this product?')) return;
+  fetch(`/api/products/admin/products/${id}`, { method: 'DELETE' })
+    .then(() => { loadProducts(); alert('Product deleted'); })
+    .catch(err => alert('Failed to delete product'));
+}
+
+function editCategory(id) {
+  alert('Edit category ' + id + ' - coming soon');
+}
+
+function deleteCategory(id) {
+  if (!confirm('Delete this category?')) return;
+  fetch(`/api/products/admin/categories/${id}`, { method: 'DELETE' })
+    .then(() => { loadCategories(); alert('Category deleted'); })
+    .catch(err => alert('Failed to delete category'));
+}
+
+function editCommercial(id) {
+  alert('Edit commercial ' + id + ' - coming soon');
+}
+
+function deleteCommercial(id) {
+  if (!confirm('Delete this commercial?')) return;
+  fetch(`/api/products/admin/commercials/${id}`, { method: 'DELETE' })
+    .then(() => { loadCommercials(); alert('Commercial deleted'); })
+    .catch(err => alert('Failed to delete commercial'));
+}
+</script>
+{% endblock %}

@@ -1,0 +1,449 @@
+{% extends "base_public.html" %}
+
+{% block title %}{{ product.name if product else 'Product' }} - Jonche Store{% endblock %}
+
+{% block content %}
+{% if error %}
+<div class="container py-5 text-center">
+  <div class="alert alert-danger" role="alert">
+    <i class="fas fa-exclamation-circle"></i> {{ error }}
+  </div>
+  <a href="/store/products" class="btn btn-primary">Browse Products</a>
+</div>
+{% elif product %}
+<div class="container py-5">
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/store" class="text-decoration-none">Store</a></li>
+      <li class="breadcrumb-item"><a href="/store/products" class="text-decoration-none">Products</a></li>
+      <li class="breadcrumb-item active">{{ product.name }}</li>
+    </ol>
+  </nav>
+
+  <div class="row g-5">
+    <!-- ── Product Images ───────────────────────────────────────────────────── -->
+    <div class="col-md-5">
+      <div class="product-images">
+        <!-- Main Image -->
+        <div class="main-image mb-3 bg-light rounded-3 overflow-hidden">
+          {% if product.primary_image or (product.images and product.images|length > 0) %}
+            {% set main_img = product.primary_image or product.images[0] %}
+            <img id="mainImage" src="{{ main_img.image_url }}" 
+                 alt="{{ main_img.alt_text }}" class="w-100" style="min-height: 400px; object-fit: cover;">
+          {% else %}
+            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-secondary text-white" style="min-height: 400px;">
+              <i class="fas fa-image fa-5x opacity-50"></i>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Thumbnail Gallery -->
+        {% if product.images and product.images|length > 1 %}
+        <div class="image-gallery d-flex gap-2 overflow-x-auto mb-4">
+          {% for image in product.images %}
+          <img src="{{ image.image_url }}" alt="{{ image.alt_text }}" 
+               class="thumbnail border rounded cursor-pointer" style="width: 80px; height: 80px; object-fit: cover;"
+               onclick="document.getElementById('mainImage').src = '{{ image.image_url }}'">
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Enhanced Views Section -->
+        <div class="enhanced-views">
+          <hr>
+          <h6 class="mb-3"><i class="fas fa-magic"></i> Enhanced Views</h6>
+          
+          <!-- Product Angles Tabs -->
+          <div id="anglesContainer" class="mb-4"></div>
+          
+          <!-- Size Comparison -->
+          <div id="sizeComparisonContainer" class="mb-3"></div>
+          
+          <!-- Loading Indicator -->
+          <div id="loadingIndicator" class="alert alert-info d-none" role="alert">
+            <div class="spinner-border spinner-border-sm me-2" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            Loading enhanced views...
+          </div>
+          
+          <!-- Error Message -->
+          <div id="errorMessage" class="alert alert-warning d-none" role="alert"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Product Info ───────────────────────────────────────────────────── -->
+    <div class="col-md-7">
+      <!-- Header -->
+      <div class="mb-4">
+        <p class="text-muted">
+          <i class="fas fa-tag"></i> {{ product.category_name or 'Product' }}
+        </p>
+        <h1 class="mb-2">{{ product.name }}</h1>
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <h3 class="mb-0 text-primary">${{ "%.2f" | format(product.base_price_dollars) }}</h3>
+          {% if product.total_quantity > 5 %}
+          <span class="badge bg-success fs-6"><i class="fas fa-check-circle"></i> In Stock</span>
+          {% elif product.total_quantity > 0 %}
+          <span class="badge bg-warning text-dark fs-6"><i class="fas fa-exclamation-triangle"></i> Limited Stock</span>
+          {% else %}
+          <span class="badge bg-danger fs-6"><i class="fas fa-times-circle"></i> Out of Stock</span>
+          {% endif %}
+        </div>
+        <p class="text-muted">SKU: <code>{{ product.sku }}</code></p>
+      </div>
+
+      <!-- Description -->
+      {% if product.description %}
+      <div class="description mb-4">
+        <h5>Description</h5>
+        <p>{{ product.description }}</p>
+      </div>
+      {% endif %}
+
+      <!-- Variants / Options -->
+      {% if product.variants and product.variants|length > 0 %}
+      <div class="variants mb-4">
+        <h5>Options</h5>
+        
+        {% set grouped_variants = {} %}
+        {% for variant in product.variants %}
+          {% if variant.option_name not in grouped_variants %}
+            {% set _ = grouped_variants.update({variant.option_name: []}) %}
+          {% endif %}
+          {% set _ = grouped_variants[variant.option_name].append(variant) %}
+        {% endfor %}
+
+        {% for option_name, variants in grouped_variants.items() %}
+        <div class="mb-3">
+          <label class="form-label fw-bold">{{ option_name | title }}</label>
+          <div class="btn-group w-100 d-flex flex-wrap gap-2" role="group">
+            {% for variant in variants %}
+            <input type="radio" class="btn-check variant-option" 
+                   id="variant_{{ variant.id }}" 
+                   name="{{ option_name }}"
+                   data-variant-id="{{ variant.id }}"
+                   data-variant-sku="{{ variant.variant_sku }}"
+                   data-stock="{{ variant.quantity_in_stock }}"
+                   data-price="{{ variant.price }}"
+                   {% if loop.first %}checked{% endif %}>
+            <label class="btn btn-outline-primary" for="variant_{{ variant.id }}">
+              {{ variant.option_value }}
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+
+        <!-- Selected Variant Info -->
+        <div class="alert alert-info" id="variantInfo" role="alert">
+          <p class="mb-0">
+            SKU: <code id="selectedSku" class="text-monospace"></code> | 
+            Stock: <span id="selectedStock" class="fw-bold"></span> | 
+            Price: <span id="selectedPrice" class="fw-bold text-primary">$0.00</span>
+          </p>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Quantity Selector -->
+      <div class="quantity-selector mb-4">
+        <label for="quantity" class="form-label fw-bold">Quantity</label>
+        <select id="quantity" class="form-select" style="max-width: 150px;">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </div>
+
+      <!-- Add to Cart Button -->
+      <button id="addToCartBtn" class="btn btn-primary btn-lg w-100 mb-3" {% if product.total_quantity <= 0 %}disabled{% endif %}>
+        <i class="fas fa-shopping-cart"></i> Add to Cart
+      </button>
+
+      <!-- Continue Shopping -->
+      <a href="/store/products" class="btn btn-outline-secondary w-100">
+        Continue Shopping
+      </a>
+
+      <!-- Additional Info -->
+      <div class="mt-5 pt-4 border-top">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <h6><i class="fas fa-shipping-fast"></i> Fast Shipping</h6>
+            <p class="small text-muted">Ships within 2-3 business days</p>
+          </div>
+          <div class="col-md-6">
+            <h6><i class="fas fa-undo"></i> Easy Returns</h6>
+            <p class="small text-muted">30-day return guarantee</p>
+          </div>
+          <div class="col-md-6">
+            <h6><i class="fas fa-lock"></i> Secure Payment</h6>
+            <p class="small text-muted">All payments processed securely</p>
+          </div>
+          <div class="col-md-6">
+            <h6><i class="fas fa-headset"></i> Support</h6>
+            <p class="small text-muted">24/7 customer support</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Related Products (Future) ──────────────────────────────────────────── -->
+  <section class="mt-5 pt-5 border-top">
+    <h3 class="mb-4">You Might Also Like</h3>
+    <p class="text-muted text-center py-5">More products coming soon...</p>
+  </section>
+</div>
+
+<!-- Add to Cart Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="addToCartToast" class="toast" role="alert">
+    <div class="toast-header bg-success text-white">
+      <strong class="me-auto"><i class="fas fa-check-circle"></i> Success</strong>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+    </div>
+    <div class="toast-body">
+      <div id="toastMessage">Product added to cart!</div>
+    </div>
+  </div>
+</div>
+
+<style>
+.thumbnail {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+}
+
+.thumbnail:hover,
+.thumbnail.active {
+  opacity: 1;
+  border-color: #0d6efd !important;
+}
+
+.variant-option:checked + .btn {
+  font-weight: 600;
+}
+
+.image-gallery {
+  -webkit-overflow-scrolling: touch;
+}
+
+.breadcrumb {
+  background: transparent;
+}
+
+.btn-group {
+  flex-wrap: wrap;
+}
+
+.btn-group .btn-outline-primary {
+  flex: 1 1 auto;
+  min-width: 100px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const addToCartBtn = document.getElementById('addToCartBtn');
+  const quantitySelect = document.getElementById('quantity');
+  const variantOptions = document.querySelectorAll('.variant-option');
+  const toast = new bootstrap.Toast(document.getElementById('addToCartToast'));
+
+  // Update variant info when selected
+  variantOptions.forEach(option => {
+    option.addEventListener('change', updateVariantInfo);
+  });
+
+  // Initial update
+  updateVariantInfo();
+
+  // Add to cart
+  addToCartBtn.addEventListener('click', addToCart);
+
+  // Load enhanced product views
+  loadEnhancedViews();
+
+  function updateVariantInfo() {
+    const selected = document.querySelector('.variant-option:checked');
+    if (selected) {
+      const sku = selected.dataset.variantSku;
+      const stock = selected.dataset.stock;
+      const price = (parseInt(selected.dataset.price) / 100).toFixed(2);
+
+      document.getElementById('selectedSku').textContent = sku;
+      document.getElementById('selectedStock').textContent = stock + ' available';
+      document.getElementById('selectedPrice').textContent = '$' + price;
+
+      // Disable add to cart if out of stock
+      addToCartBtn.disabled = parseInt(stock) <= 0;
+      addToCartBtn.innerHTML = parseInt(stock) <= 0 ? 
+        '<i class="fas fa-ban"></i> Out of Stock' : 
+        '<i class="fas fa-shopping-cart"></i> Add to Cart';
+    }
+  }
+
+  function addToCart() {
+    const product = {{ product | tojson }};
+    const quantity = parseInt(quantitySelect.value);
+    const selected = document.querySelector('.variant-option:checked');
+    const variantId = selected ? parseInt(selected.dataset.variantId) : null;
+
+    const cartData = {
+      product_id: {{ product.id }},
+      variant_id: variantId,
+      quantity: quantity
+    };
+
+    fetch('/api/store/cart/items', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(cartData),
+      credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('toastMessage').textContent = 
+        `Added ${quantity} ${product.name}${quantity > 1 ? 's' : ''} to cart!`;
+      toast.show();
+      
+      // Update add to cart button
+      addToCartBtn.innerHTML = '<i class="fas fa-check"></i> Added to Cart';
+      setTimeout(() => {
+        addToCartBtn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
+      }, 2000);
+    })
+    .catch(err => {
+      console.error('Failed to add to cart:', err);
+      document.getElementById('toastMessage').textContent = 'Failed to add to cart. Please try again.';
+      const errorToast = new bootstrap.Toast(document.getElementById('addToCartToast'));
+      errorToast.show();
+    });
+  }
+
+  // ── Enhanced Views Loader ────────────────────────────────────────────────
+
+  function loadEnhancedViews() {
+    const productId = {{ product.id }};
+    const apiUrl = `/api/products/${productId}/generated-images`;
+
+    fetch(apiUrl)
+      .then(res => res.json())
+      .then(data => {
+        displayEnhancedViews(data.generated_images_by_type);
+      })
+      .catch(err => {
+        console.log('Enhanced views not available:', err);
+        // Hide the section if no data
+        document.querySelector('.enhanced-views').style.display = 'none';
+      });
+  }
+
+  function displayEnhancedViews(imagesByType) {
+    const anglesContainer = document.getElementById('anglesContainer');
+    const sizeComparisonContainer = document.getElementById('sizeComparisonContainer');
+
+    if (!imagesByType || Object.keys(imagesByType).length === 0) {
+      document.querySelector('.enhanced-views').style.display = 'none';
+      return;
+    }
+
+    // Display angles
+    if (imagesByType.angle && imagesByType.angle.length > 0) {
+      displayAngles(imagesByType.angle, anglesContainer);
+    }
+
+    // Display size comparison
+    if (imagesByType.size_comparison && imagesByType.size_comparison.length > 0) {
+      displaySizeComparison(imagesByType.size_comparison[0], sizeComparisonContainer);
+    }
+
+    // Show enhanced views section if we have content
+    if (anglesContainer.innerHTML || sizeComparisonContainer.innerHTML) {
+      document.querySelector('.enhanced-views').style.display = 'block';
+    }
+  }
+
+  function displayAngles(angles, container) {
+    if (angles.length === 0) return;
+
+    let html = '<div class="mb-3">';
+    html += '<label class="form-label fw-bold">360° Views</label>';
+    html += '<div class="row g-2">';
+
+    angles.forEach((angle, idx) => {
+      html += `
+        <div class="col-6">
+          <img src="${angle.image_url}" 
+               class="img-fluid rounded cursor-pointer border" 
+               style="max-height: 120px; object-fit: cover;"
+               onclick="document.getElementById('mainImage').src = '${angle.image_url}'"
+               title="View ${angle.parameters?.angle || idx * 90}°"
+               alt="360 view ${idx + 1}">
+        </div>
+      `;
+    });
+
+    html += '</div></div>';
+    container.innerHTML = html;
+  }
+
+  function displaySizeComparison(sizeImg, container) {
+    if (!sizeImg || !sizeImg.image_url) return;
+
+    const html = `
+      <div class="mb-3">
+        <label class="form-label fw-bold">Size Comparison</label>
+        <div class="border rounded overflow-hidden">
+          <img src="${sizeImg.image_url}" 
+               class="img-fluid w-100" 
+               style="max-height: 200px; object-fit: contain; background: #f8f9fa;"
+               onclick="openModal('${sizeImg.image_url}', 'Size Comparison')"
+               style="cursor: pointer;"
+               alt="Size comparison guide">
+        </div>
+        <p class="small text-muted mt-2">
+          <i class="fas fa-info-circle"></i> Click to view full size
+        </p>
+      </div>
+    `;
+    container.innerHTML = html;
+  }
+
+  // Modal for full-size image view
+  window.openModal = function(imageSrc, title) {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'imageModal';
+    modal.setAttribute('tabindex', '-1');
+    modal.innerHTML = `
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">${title}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body text-center">
+            <img src="${imageSrc}" class="img-fluid" alt="${title}">
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    modal.addEventListener('hidden.bs.modal', () => modal.remove());
+  };
+});
+</script>
+
+{% endif %}
+{% endblock %}

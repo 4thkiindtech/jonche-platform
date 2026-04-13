@@ -1,8 +1,20 @@
 /* ── Jonche Platform — Main JS ───────────────────────────────────────────────── */
 
-const API_BASE = window.location.hostname === 'localhost'
-  ? 'http://localhost:5001/api'
-  : '/api';
+function resolveApiBase() {
+  const hostname = window.location.hostname;
+  const isLocal =
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '::1';
+
+  if (!isLocal) return '/api';
+
+  // Preserve hostname so cookies (domain) match when using 127.0.0.1 vs localhost.
+  const hostForUrl = hostname.includes(':') ? `[${hostname}]` : hostname;
+  return `http://${hostForUrl}:5001/api`;
+}
+
+const API_BASE = resolveApiBase();
 
 /* ── Fetch helper ────────────────────────────────────────────────────────────── */
 async function apiFetch(path, options = {}) {

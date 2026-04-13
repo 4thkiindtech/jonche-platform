@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}JONCHE — Partner Applications{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="page-title">PARTNER APPLICATIONS</div>
+    <div class="page-subtitle">Most recent public intake submissions</div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-ghost" onclick="window.location.reload()">REFRESH</button>
+  </div>
+</div>
+
+{% if error %}
+<div class="panel">
+  <div class="alert">{{ error }}</div>
+</div>
+{% endif %}
+
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-title">RECENT</div>
+    <span class="panel-action">{{ applications|length }} LOADED</span>
+  </div>
+
+  <div class="table">
+    <div class="table-head" style="grid-template-columns: 160px 160px 120px 1.1fr 1.2fr 1fr 90px;">
+      <div>Created</div>
+      <div>Program</div>
+      <div>Source</div>
+      <div>Name</div>
+      <div>Email</div>
+      <div>Location</div>
+      <div>Status</div>
+    </div>
+
+    {% for a in applications %}
+    <div class="table-row" style="grid-template-columns: 160px 160px 120px 1.1fr 1.2fr 1fr 90px;">
+      <div class="mono" style="font-size:11px">{{ (a.created_at or '')[:19].replace('T',' ') }}</div>
+      <div class="mono" style="font-size:11px">{{ a.program_type }}</div>
+      <div class="mono" style="font-size:11px">{{ a.source or (a.utm.get('utm_source') if a.utm else '') }}</div>
+      <div>
+        <div class="row-title">{{ a.full_name }}</div>
+        {% if a.business_name %}
+        <div class="row-sub">{{ a.business_name }}</div>
+        {% endif %}
+      </div>
+      <div class="mono" style="font-size:12px">{{ a.email }}</div>
+      <div class="mono" style="font-size:11px">{{ a.city or '' }}{% if a.city and a.state %}, {% endif %}{{ a.state or '' }}</div>
+      <div class="mono" style="font-size:11px">{{ a.status }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

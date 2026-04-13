@@ -1,4 +1,5 @@
 .PHONY: install dev dev-web dev-api test lint format clean deploy
+.PHONY: seed
 
 # ── Install ────────────────────────────────────────────────────────────────────
 install:
@@ -15,6 +16,10 @@ dev-web:
 
 dev-api:
 	cd apps/api && python3 app.py
+
+# ── DB Seed (dev) ──────────────────────────────────────────────────────────────
+seed:
+	cd apps/api && python3 -m db.seed
 
 # ── Test ───────────────────────────────────────────────────────────────────────
 test:

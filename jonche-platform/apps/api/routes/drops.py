@@ -67,7 +67,8 @@ def update_drop(slug):
     data = request.get_json()
     editable = ["name", "colorway", "sizes", "price", "total_units",
                 "units_reserved", "description", "use_raffle", "max_per_member",
-                "drop_at", "ends_at", "status"]
+                "drop_at", "ends_at", "status",
+                "apliiq_product_id", "apliiq_variant_id"]
     for field in editable:
         if field in data:
             if field in ("drop_at", "ends_at") and data[field]:

@@ -1,0 +1,295 @@
+{% extends "base_public.html" %}
+
+{% block title %}Shopping Cart - Jonche Store{% endblock %}
+
+{% block content %}
+<div class="container cart-page py-5">
+  <h1 class="mb-4"><i class="fas fa-shopping-cart"></i> Shopping Cart</h1>
+
+  <div class="row g-4">
+    <!-- ── Cart Items ──────────────────────────────────────────────────────── -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-body p-0">
+          <div id="cartItems" class="cart-items-list">
+            <!-- Loading -->
+            <div class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="text-muted mt-2">Loading your cart...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Cart Summary ────────────────────────────────────────────────────── -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm sticky-top" style="top: 80px;">
+        <div class="card-body">
+          <h5 class="card-title mb-4">Order Summary</h5>
+
+          <div id="cartSummary">
+            <!-- Loading -->
+            <div class="text-center">
+              <div class="spinner-spinner spinner-border spinner-border-sm text-primary"></div>
+            </div>
+          </div>
+
+          <!-- Checkout Button -->
+          <div class="mt-4 d-grid gap-2">
+            <button id="checkoutBtn" class="btn btn-primary btn-lg" disabled>
+              <i class="fas fa-lock"></i> Proceed to Checkout
+            </button>
+            <a href="/store/products" class="btn btn-outline-secondary">
+              Continue Shopping
+            </a>
+          </div>
+
+          <!-- Info -->
+          <div class="alert alert-info mt-4 small" role="alert">
+            <i class="fas fa-info-circle"></i> 
+            <strong>Free shipping</strong> on orders over $50. Delivery in 2-3 business days.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Empty Cart Message ──────────────────────────────────────────────── -->
+  <div id="emptyCartMessage" class="alert alert-info text-center py-5" role="alert" style="display: none;">
+    <i class="fas fa-inbox fa-4x mb-3 d-block opacity-50"></i>
+    <h4>Your cart is empty</h4>
+    <p class="text-muted mb-4">Start shopping to add items to your cart.</p>
+    <a href="/store/products" class="btn btn-primary">
+      Browse Products
+    </a>
+  </div>
+</div>
+
+<style>
+.cart-page {
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.cart-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.cart-item:hover {
+  background: transparent;
+}
+
+.cart-item:last-child {
+  border-bottom: none;
+}
+
+.cart-item-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: white;
+}
+
+.quantity-input {
+  max-width: 80px;
+}
+
+.product-title {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.product-variant {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.cart-summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+}
+
+.cart-summary-row.total {
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-top: 2px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+  padding: 1rem 0;
+  margin: 1rem 0;
+}
+
+@media (max-width: 768px) {
+  .sticky-top {
+    position: relative;
+    top: auto;
+  }
+
+  .cart-item-image {
+    width: 80px;
+    height: 80px;
+  }
+}
+</style>
+
+<script>
+let cart = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadCart();
+
+  // Setup checkout button
+  document.getElementById('checkoutBtn').addEventListener('click', function() {
+    if (cart && cart.item_count > 0) {
+      window.location.href = '/store/checkout';
+    }
+  });
+});
+
+function loadCart() {
+  fetch('/api/store/cart', {
+    credentials: 'include'
+  })
+  .then(res => res.json())
+  .then(data => {
+    cart = data;
+    renderCart();
+  })
+  .catch(err => {
+    console.error('Failed to load cart:', err);
+    document.getElementById('cartItems').innerHTML = 
+      '<div class="alert alert-danger m-4">Failed to load cart</div>';
+  });
+}
+
+function renderCart() {
+  const itemsContainer = document.getElementById('cartItems');
+  const summaryContainer = document.getElementById('cartSummary');
+  const emptyMessage = document.getElementById('emptyCartMessage');
+  const checkoutBtn = document.getElementById('checkoutBtn');
+
+  if (!cart.items || cart.items.length === 0) {
+    itemsContainer.innerHTML = '';
+    summaryContainer.innerHTML = '';
+    emptyMessage.style.display = 'block';
+    checkoutBtn.disabled = true;
+    return;
+  }
+
+  // Hide empty message
+  emptyMessage.style.display = 'none';
+  checkoutBtn.disabled = false;
+
+  // Render items
+  itemsContainer.innerHTML = cart.items.map(item => `
+    <div class="cart-item d-flex justify-content-between align-items-start gap-3">
+      <div>
+        <img src="${item.product_image_url || '/static/images/placeholder.png'}" 
+             alt="${item.product_name}" class="cart-item-image">
+      </div>
+      
+      <div class="flex-grow-1">
+        <p class="product-title mb-0">${item.product_name}</p>
+        ${item.variant_option ? 
+          `<p class="product-variant mb-2">${item.variant_option}</p>` : 
+          ''
+        }
+        <p class="text-muted small mb-0">SKU: <code>${item.variant_sku || 'N/A'}</code></p>
+      </div>
+
+      <div class="text-end">
+        <p class="mb-2">
+          <strong>$${(item.unit_price_dollars).toFixed(2)} each</strong>
+        </p>
+        
+        <div class="d-flex gap-2 align-items-center mb-2">
+          <input type="number" class="form-control form-control-sm quantity-input" 
+                 value="${item.quantity}" min="1" max="100"
+                 data-item-id="${item.id}"
+                 onchange="updateQuantity(${item.id}, this.value)">
+        </div>
+
+        <p class="h6 mb-2">Subtotal: <strong>$${(item.item_total_dollars).toFixed(2)}</strong></p>
+        
+        <button class="btn btn-sm btn-outline-danger" 
+                onclick="removeItem(${item.id})">
+          <i class="fas fa-trash"></i> Remove
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  // Render summary
+  const subtotal = cart.total_dollars;
+  const tax = subtotal * 0.08;  // 8% tax
+  const shipping = subtotal > 50 ? 0 : 9.99;
+  const total = subtotal + tax + shipping;
+
+  summaryContainer.innerHTML = `
+    <div class="cart-summary-row">
+      <span>Subtotal:</span>
+      <strong>$${(subtotal).toFixed(2)}</strong>
+    </div>
+    <div class="cart-summary-row">
+      <span>Tax (8%):</span>
+      <strong>$${(tax).toFixed(2)}</strong>
+    </div>
+    <div class="cart-summary-row">
+      <span>Shipping:</span>
+      <strong>${shipping === 0 ? 'FREE' : '$' + (shipping).toFixed(2)}</strong>
+    </div>
+    <div class="cart-summary-row total">
+      <span>Total:</span>
+      <strong class="text-primary">$${(total).toFixed(2)}</strong>
+    </div>
+    <p class="small text-muted mb-0">
+      <i class="fas fa-box"></i> Items in cart: <strong>${cart.item_count}</strong>
+    </p>
+  `;
+}
+
+function updateQuantity(itemId, newQuantity) {
+  const quantity = parseInt(newQuantity);
+  if (quantity <= 0) {
+    removeItem(itemId);
+    return;
+  }
+
+  fetch(`/api/store/cart/items/${itemId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ quantity: quantity }),
+    credentials: 'include'
+  })
+  .then(res => res.json())
+  .then(data => {
+    cart = data;
+    renderCart();
+  })
+  .catch(err => console.error('Failed to update quantity:', err));
+}
+
+function removeItem(itemId) {
+  if (!confirm('Remove this item from cart?')) return;
+
+  fetch(`/api/store/cart/items/${itemId}`, {
+    method: 'DELETE',
+    credentials: 'include'
+  })
+  .then(res => res.json())
+  .then(data => {
+    cart = data;
+    renderCart();
+  })
+  .catch(err => console.error('Failed to remove item:', err));
+}
+</script>
+{% endblock %}

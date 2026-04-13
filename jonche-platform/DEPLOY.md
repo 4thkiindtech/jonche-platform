@@ -9,7 +9,7 @@
 git init
 git add .
 git commit -m "Initial Jonche Platform"
-git remote add origin https://github.com/yourusername/jonche-platform.git
+git remote add origin https://github.com/4thkiindtech/jonche-platform.git
 git push -u origin main
 ```
 
