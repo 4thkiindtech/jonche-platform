@@ -95,13 +95,21 @@
         </div>
 
         <!-- Terms & Conditions -->
-        <div class="form-check mb-4">
+        <div class="form-check mb-3">
           <input type="checkbox" class="form-check-input" id="agreeTerms" required>
           <label class="form-check-label" for="agreeTerms">
             I agree to the <a href="#" class="text-decoration-none">Terms & Conditions</a> and 
             <a href="#" class="text-decoration-none">Privacy Policy</a>
           </label>
           <div class="invalid-feedback">You must agree to continue</div>
+        </div>
+
+        <!-- Newsletter Signup (Optional) -->
+        <div class="form-check mb-4">
+          <input type="checkbox" class="form-check-input" id="subscribeNewsletter">
+          <label class="form-check-label" for="subscribeNewsletter">
+            <small>Stay updated with new drops, exclusive offers, and important shipping notifications</small>
+          </label>
         </div>
 
         <!-- Submit Button -->
@@ -273,7 +281,8 @@ function completeCheckout() {
                       document.getElementById('shippingState').value + ' ' +
                       document.getElementById('shippingZip').value,
     shipping_email: document.getElementById('shippingEmail').value,
-    stripe_payment_intent: 'pi_mock_' + Math.random().toString(36).substr(2, 9)
+    stripe_payment_intent: 'pi_mock_' + Math.random().toString(36).substr(2, 9),
+    subscribe_newsletter: document.getElementById('subscribeNewsletter').checked
   };
 
   fetch('/api/store/order', {
@@ -287,7 +296,12 @@ function completeCheckout() {
   .then(res => res.json())
   .then(data => {
     if (data.order_id) {
-      window.location.href = '/store/order-success?order_id=' + data.order_id;
+      // Include lookup token in URL for guest orders
+      let successUrl = '/store/order-success?order_id=' + data.order_id;
+      if (data.lookup_token) {
+        successUrl += '&lookup_token=' + data.lookup_token;
+      }
+      window.location.href = successUrl;
     } else {
       throw new Error('No order ID returned');
     }
@@ -298,6 +312,7 @@ function completeCheckout() {
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-lock"></i> Complete Purchase';
   });
+}
 }
 </script>
 {% endblock %}

@@ -92,6 +92,5 @@ Start with `.env.example`, then add what you need:
   - Partners: Affiliates, Referral, Retail, Executives
 
 ## References
-
 - Store setup guide: `docs/STORE_SETUP.md`
 - Store-order payments (Phase 5): `PHASE5_COMPLETE.md`, `docs/PHASE5_API.md`

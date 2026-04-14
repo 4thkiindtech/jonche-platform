@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify, g
 
 from db import db
-from db.models import Cart, CartItem, Product, ProductVariant, Member
+from db.models import Cart, CartItem, Product, ProductVariant, Member, Order, GuestOrderLookup
 from middleware.auth import require_member
 
 store_bp = Blueprint("store", __name__)
@@ -241,14 +241,17 @@ def clear_cart():
 # ── Checkout ───────────────────────────────────────────────────────────────
 
 @store_bp.route("/cart/checkout", methods=["POST"])
-@require_member
 def checkout():
     """
     Prepare checkout (create payment intent).
-    Requires member authentication.
+    Works for both members and guests (no login required).
     """
-    member = g.current_member
-    cart = _get_cart(member_id=member.id)
+    # Get cart for member or guest
+    if hasattr(g, "current_member") and g.current_member:
+        cart = _get_cart(member_id=g.current_member.id)
+    else:
+        session_token = request.cookies.get(CART_SESSION_COOKIE)
+        cart = _get_cart(session_token=session_token)
 
     if not cart or cart.item_count == 0:
         return jsonify({"error": "Cart is empty"}), 400
@@ -280,23 +283,32 @@ def checkout():
 
 
 @store_bp.route("/store/order", methods=["POST"])
-@require_member
 def create_store_order():
     """
     Complete purchase after payment confirmation.
+    Works for both members and guests (no login required).
     This would be called from payment webhook or client after payment succeeds.
     """
-    member = g.current_member
-    cart = _get_cart(member_id=member.id)
+    # Get cart for member or guest
+    member = None
+    if hasattr(g, "current_member") and g.current_member:
+        member = g.current_member
+        cart = _get_cart(member_id=member.id)
+    else:
+        session_token = request.cookies.get(CART_SESSION_COOKIE)
+        cart = _get_cart(session_token=session_token)
 
     if not cart or cart.item_count == 0:
         return jsonify({"error": "Cart is empty"}), 400
 
     data = request.get_json()
-    required = ["stripe_payment_intent", "shipping_name", "shipping_address"]
+    required = ["stripe_payment_intent", "shipping_name", "shipping_address", "shipping_email"]
     for field in required:
         if field not in data:
             return jsonify({"error": f"Missing field: {field}"}), 400
+
+    # Newsletter opt-in (optional)
+    subscribe_newsletter = data.get("subscribe_newsletter", False)
 
     # In a real implementation:
     # 1. Verify payment with Stripe
@@ -305,14 +317,60 @@ def create_store_order():
     # 4. Mark cart as completed
     # 5. Send confirmation email
 
-    # For now, just return success
+    # Create Order record
+    # NOTE: suppress_manufacturer_emails=True means we (Jonche) handle all customer communication
+    # Manufacturers/fulfillment partners send data via API, not directly to customers
+    order = Order(
+        drop_id=1,  # TODO: Get from cart data
+        member_id=member.id if member else None,
+        status="pending",
+        total_cents=cart.total_cents,
+        stripe_payment_intent=data.get("stripe_payment_intent"),
+        shipping_name=data.get("shipping_name"),
+        shipping_email=data.get("shipping_email"),
+        shipping_address=data.get("shipping_address"),
+        suppress_manufacturer_emails=True,  # Jonche is sole communicator with customers
+    )
+    db.session.add(order)
+    db.session.flush()  # Get the order ID before committing
+
+    # Create guest order lookup token for non-members
+    lookup_token = None
+    if not member:
+        guest_lookup = GuestOrderLookup(
+            order_id=order.id,
+            lookup_token=secrets.token_urlsafe(32),
+            guest_email=data.get("shipping_email"),
+        )
+        db.session.add(guest_lookup)
+        lookup_token = guest_lookup.lookup_token
+
+    # Handle newsletter signup (optional, not forced)
+    if subscribe_newsletter:
+        from db.models import EmailSubscriber
+        subscriber = EmailSubscriber.query.filter_by(email=data.get("shipping_email")).first()
+        if not subscriber:
+            subscriber = EmailSubscriber(
+                email=data.get("shipping_email"),
+                subscribed=True,
+                category="newsletter",
+            )
+            db.session.add(subscriber)
+
     cart.status = "completed"
     cart.updated_at = datetime.utcnow()
     db.session.commit()
 
-    return jsonify({
+    response = {
         "message": "Order created successfully",
-        "order_id": "STORE-" + secrets.token_hex(4).upper(),
+        "order_id": order.order_number,
         "total_cents": cart.total_cents,
         "total_dollars": cart.total_dollars,
-    }), 201
+    }
+    
+    # For guests, include the lookup token
+    if lookup_token:
+        response["lookup_token"] = lookup_token
+        response["track_url"] = f"/api/guest/orders/{lookup_token}"
+
+    return jsonify(response), 201

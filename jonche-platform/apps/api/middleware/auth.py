@@ -152,3 +152,32 @@ def require_admin_or_member(f):
             return jsonify({"error": "Invalid or expired token"}), 401
         return f(*args, **kwargs)
     return decorated
+
+
+def optional_auth(f):
+    """Optional authentication - proceeds regardless, sets g.current_* if valid token."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = _get_token_from_request()
+        if token:
+            try:
+                payload = decode_token(token)
+                role = payload.get("role")
+                if role == "admin":
+                    from db.models import Admin
+                    g.current_admin = Admin.query.get(payload["sub"])
+                elif role == "member":
+                    from db.models import Member
+                    member = Member.query.get(payload["sub"])
+                    if member and not member.is_blacklisted:
+                        g.current_member = member
+                elif role == "retailer":
+                    from db.models import Retailer
+                    retailer = Retailer.query.get(payload["sub"])
+                    if retailer and retailer.status == "active":
+                        g.current_retailer = retailer
+                g.current_role = role
+            except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+                pass  # Ignore token errors, proceed unauthenticated
+        return f(*args, **kwargs)
+    return decorated

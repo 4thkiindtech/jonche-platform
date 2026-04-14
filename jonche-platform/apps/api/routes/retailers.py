@@ -7,26 +7,31 @@ from flask import Blueprint, request, jsonify, g
 from werkzeug.security import generate_password_hash
 from db import db
 from db.models import Retailer, RetailerAllocation, Drop, Order, OrderItem
-from middleware.auth import require_admin, require_retailer
+from middleware.auth import require_admin, require_retailer, optional_auth
 from services.notifications import enqueue_email
 
 retailers_bp = Blueprint("retailers", __name__)
 
 
 @retailers_bp.route("/")
-@require_admin
+@optional_auth
 def list_retailers():
+    """List retailers - public endpoint, can be filtered by tier."""
     tier = request.args.get("tier")
-    q = Retailer.query
+    q = Retailer.query.filter_by(status="active")  # Only show active retailers publicly
     if tier:
         q = q.filter_by(tier=tier)
     return jsonify([r.to_dict() for r in q.all()])
 
 
 @retailers_bp.route("/<int:retailer_id>")
-@require_admin
+@optional_auth
 def get_retailer(retailer_id):
+    """Get specific retailer - public endpoint."""
     retailer = Retailer.query.get_or_404(retailer_id)
+    # Only show active retailers publicly (unless authenticated as admin)
+    if retailer.status != "active" and not (hasattr(g, 'current_admin') and g.current_admin):
+        return jsonify({"error": "Not found"}), 404
     return jsonify(retailer.to_dict())
 
 

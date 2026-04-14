@@ -30,6 +30,25 @@ def _csv_response(filename: str, rows: list[dict]) -> Response:
     )
 
 
+@admin_bp.route("/stats", methods=["GET"])
+@require_admin
+def get_stats():
+    """Get platform statistics."""
+    total_members = Member.query.count()
+    total_orders = Order.query.count()
+    total_retailers = Retailer.query.count()
+    total_drops = Drop.query.count()
+    
+    return jsonify({
+        "total_members": total_members,
+        "total_orders": total_orders,
+        "total_retailers": total_retailers,
+        "total_drops": total_drops,
+        "completed_orders": Order.query.filter_by(status="completed").count(),
+        "pending_orders": Order.query.filter_by(status="pending").count(),
+    })
+
+
 @admin_bp.route("/exports/members.csv", methods=["GET"])
 @require_admin
 def export_members():

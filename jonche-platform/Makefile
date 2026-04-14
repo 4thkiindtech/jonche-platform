@@ -1,43 +1,60 @@
 .PHONY: install dev dev-web dev-api test lint format clean deploy
 .PHONY: seed
 
+# ── Detect OS ──────────────────────────────────────────────────────────────────
+UNAME := $(shell uname 2>/dev/null || echo WINDOWS)
+ifeq ($(OS),Windows_NT)
+    UNAME := WINDOWS
+endif
+
+ifeq ($(UNAME),WINDOWS)
+    VENV_BIN := .venv\Scripts
+    PYTHON := $(VENV_BIN)\python
+    PIP := $(VENV_BIN)\pip
+else
+    VENV_BIN := .venv/bin
+    PYTHON := $(VENV_BIN)/python
+    PIP := $(VENV_BIN)/pip
+endif
+
 # ── Install ────────────────────────────────────────────────────────────────────
 install:
-	cd apps/web && python3 -m pip install -r requirements.txt
-	cd apps/api && python3 -m pip install -r requirements.txt
+	python -m venv .venv
+	$(PIP) install -r apps/web/requirements.txt
+	$(PIP) install -r apps/api/requirements.txt
 
 # ── Dev ────────────────────────────────────────────────────────────────────────
 dev:
-	@echo "Starting Jonche Platform..."
-	make dev-api & make dev-web
-
-dev-web:
-	cd apps/web && python3 app.py
+	@echo "Starting Jonche Platform (API on :5001, Web on :5000)..."
+	@echo "Open 2 new terminals and run: make dev-api && make dev-web"
 
 dev-api:
-	cd apps/api && python3 app.py
+	$(PYTHON) apps/api/app.py
+
+dev-web:
+	$(PYTHON) apps/web/app.py
 
 # ── DB Seed (dev) ──────────────────────────────────────────────────────────────
 seed:
-	cd apps/api && python3 -m db.seed
+	cd apps/api && $(PYTHON) -m db.seed
 
 # ── Test ───────────────────────────────────────────────────────────────────────
 test:
-	cd apps/api && python3 -m pytest tests/ -v
-	cd apps/web && python3 -m pytest tests/ -v
+	$(PYTHON) -m pytest apps/api/tests/ -v
+	$(PYTHON) -m pytest apps/web/tests/ -v
 
 test-api:
-	cd apps/api && python3 -m pytest tests/ -v
+	$(PYTHON) -m pytest apps/api/tests/ -v
 
 test-web:
-	cd apps/web && python3 -m pytest tests/ -v
+	$(PYTHON) -m pytest apps/web/tests/ -v
 
 # ── Code Quality ───────────────────────────────────────────────────────────────
 lint:
-	ruff check apps/ packages/
+	$(PYTHON) -m ruff check apps/ packages/
 
 format:
-	ruff format apps/ packages/
+	$(PYTHON) -m ruff format apps/ packages/
 
 # ── Deploy ─────────────────────────────────────────────────────────────────────
 deploy:

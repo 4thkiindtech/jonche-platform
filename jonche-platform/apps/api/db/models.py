@@ -8,7 +8,7 @@ Tables:
   - members         → VIP club members
   - drops           → limited release drops
   - waitlist_entries → raffle entries per drop per member
-  - orders          → completed purchases
+  - orders          → completed purchases (guest + member orders)
   - order_items     → line items per order
   - checkout_locks  → timed reservation holds (8 min)
   - certificates    → authenticity certificates
@@ -18,6 +18,9 @@ Tables:
   - partner_applications → partner program intake submissions
   - retailer_allocations → per-drop allocations to retailers
   - notifications   → outbound email queue
+  - email_subscribers → newsletter/notification opt-ins (NEW)
+  - guest_order_lookup → guest order public lookup tokens (NEW)
+  - order_tracking  → external fulfillment tracking data (NEW)
 """
 
 from datetime import datetime
@@ -280,12 +283,14 @@ class Order(db.Model):
     total_cents     = db.Column(db.Integer, nullable=False)
     stripe_payment_intent = db.Column(db.String(255), nullable=True)
     shipping_name   = db.Column(db.String(150), nullable=True)
+    shipping_email  = db.Column(db.String(255), nullable=True)  # Guest email (no account)
     shipping_address= db.Column(db.Text, nullable=True)
     shipped_at      = db.Column(db.DateTime, nullable=True)
     tracking_number = db.Column(db.String(100), nullable=True)
     # Apliiq fulfillment
     apliiq_order_id = db.Column(db.String(100), nullable=True)
     apliiq_status   = db.Column(db.String(50), nullable=True)   # e.g. pending/in_production/shipped
+    suppress_manufacturer_emails = db.Column(db.Boolean, default=True)  # Prevent manufacturers from sending emails
     created_at      = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at      = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -309,12 +314,14 @@ class Order(db.Model):
             "total_dollars": self.total_cents / 100,
             "stripe_payment_intent": self.stripe_payment_intent,
             "shipping_name": self.shipping_name,
+            "shipping_email": self.shipping_email,
             "shipping_address": self.shipping_address,
             "shipped_at": self.shipped_at.isoformat() if self.shipped_at else None,
             "tracking_number": self.tracking_number,
             "items": [i.to_dict() for i in self.items],
             "apliiq_order_id": self.apliiq_order_id,
             "apliiq_status": self.apliiq_status,
+            "suppress_manufacturer_emails": self.suppress_manufacturer_emails,
             "created_at": self.created_at.isoformat(),
         }
 
@@ -1746,5 +1753,86 @@ class PayoutLog(db.Model):
             "details": json.loads(self.details) if self.details else {},
             "actor_type": self.actor_type,
             "actor_id": self.actor_id,
+            "created_at": self.created_at.isoformat(),
+        }
+
+
+# ── Guest Order Support ───────────────────────────────────────────────────────
+# IMPORTANT: Communication Flow
+# Jonche is the sole communicator with customers.
+# - External partners (manufacturers, UPS, etc.) send data via API
+# - Jonche processes and sends emails/notifications to customers
+# - Suppress manufacturer emails with suppress_manufacturer_emails flag
+
+class EmailSubscriber(db.Model):
+    __tablename__ = "email_subscribers"
+
+    id              = db.Column(db.Integer, primary_key=True)
+    email           = db.Column(db.String(255), unique=True, nullable=False)
+    subscribed      = db.Column(db.Boolean, default=True)
+    category        = db.Column(db.String(50), default="newsletter")  # newsletter/promotional/order_updates
+    created_at      = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "email": self.email,
+            "subscribed": self.subscribed,
+            "category": self.category,
+            "created_at": self.created_at.isoformat(),
+        }
+
+
+class GuestOrderLookup(db.Model):
+    """Track guest orders with public lookup token"""
+    __tablename__ = "guest_order_lookup"
+
+    id              = db.Column(db.Integer, primary_key=True)
+    order_id        = db.Column(db.Integer, db.ForeignKey("orders.id"), nullable=False)
+    lookup_token    = db.Column(db.String(64), unique=True, nullable=False,
+                                default=lambda: secrets.token_urlsafe(32))
+    guest_email     = db.Column(db.String(255), nullable=False)  # For verification
+    created_at      = db.Column(db.DateTime, default=datetime.utcnow)
+
+    order           = db.relationship("Order")
+
+    def to_dict(self):
+        return {
+            "lookup_token": self.lookup_token,
+            "order_id": self.order_id,
+            "created_at": self.created_at.isoformat(),
+        }
+
+
+class OrderTracking(db.Model):
+    """Track order status from external fulfillment partners"""
+    __tablename__ = "order_tracking"
+
+    id              = db.Column(db.Integer, primary_key=True)
+    order_id        = db.Column(db.Integer, db.ForeignKey("orders.id"), nullable=False)
+    source          = db.Column(db.String(50), nullable=False)  # apliiq/manufacturer/distributor/email_parse
+    status          = db.Column(db.String(50), nullable=False)  # pending/in_production/shipped/delivered
+    tracking_number = db.Column(db.String(100), nullable=True)
+    tracking_company = db.Column(db.String(50), nullable=True)  # UPS/FedEx/USPS
+    shipping_date   = db.Column(db.DateTime, nullable=True)
+    delivery_date   = db.Column(db.DateTime, nullable=True)
+    metadata        = db.Column(db.Text, nullable=True)  # JSON extra data
+    created_at      = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at      = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    order           = db.relationship("Order")
+
+    def to_dict(self):
+        import json
+        return {
+            "id": self.id,
+            "order_id": self.order_id,
+            "source": self.source,
+            "status": self.status,
+            "tracking_number": self.tracking_number,
+            "tracking_company": self.tracking_company,
+            "shipping_date": self.shipping_date.isoformat() if self.shipping_date else None,
+            "delivery_date": self.delivery_date.isoformat() if self.delivery_date else None,
+            "metadata": json.loads(self.metadata) if self.metadata else None,
             "created_at": self.created_at.isoformat(),
         }

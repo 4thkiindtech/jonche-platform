@@ -1,0 +1,221 @@
+{% extends "base_public.html" %}
+
+{% block title %}Order Confirmation - Jonche Store{% endblock %}
+
+{% block content %}
+<div class="container order-success-page py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- Success Message -->
+      <div class="alert alert-success mb-5" role="alert">
+        <div class="text-center">
+          <i class="fas fa-check-circle fa-5x mb-3 d-block" style="color: #28a745;"></i>
+          <h2>Order Confirmed!</h2>
+          <p class="lead mb-0">Thank you for your purchase. We'll prepare your order right away.</p>
+        </div>
+      </div>
+
+      <!-- Order Details Card -->
+      <div class="card shadow-sm mb-5">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">Order Details</h5>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <p class="text-muted small mb-1">Order Number</p>
+              <p class="h6" id="orderNumber">{{ order_id }}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="text-muted small mb-1">Confirmation Email</p>
+              <p class="h6" id="confirmationEmail">{{ email }}</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <p class="text-muted small mb-1">Order Date</p>
+              <p class="h6" id="orderDate">
+                <script>document.write(new Date().toLocaleDateString())</script>
+              </p>
+            </div>
+            <div class="col-md-6">
+              <p class="text-muted small mb-1">Estimated Delivery</p>
+              <p class="h6">2-3 Business Days</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Guest Order Tracking (if applicable) -->
+      {% if lookup_token %}
+      <div class="card shadow-sm mb-5 border-info">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="fas fa-box"></i> Track Your Order</h5>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">
+            Since you checked out as a guest, save this link to track your order:
+          </p>
+          
+          <div class="input-group mb-3">
+            <input type="text" class="form-control" id="trackingLink" 
+                   value="/store/track?token={{ lookup_token }}" readonly>
+            <button class="btn btn-outline-secondary" type="button" id="copyBtn">
+              <i class="fas fa-copy"></i> Copy Link
+            </button>
+          </div>
+
+          <p class="small text-muted mb-3">
+            Or use your email to look up your order at any time on our <a href="/store/track">order tracking page</a>.
+          </p>
+
+          <a href="/store/track?token={{ lookup_token }}" class="btn btn-primary">
+            <i class="fas fa-box"></i> Track Your Order Now
+          </a>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Next Steps -->
+      <div class="card shadow-sm mb-5">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">What's Next?</h5>
+        </div>
+        <div class="card-body">
+          <ol class="ps-3">
+            <li class="mb-3">
+              <strong>Order Processing</strong>
+              <p class="text-muted small mb-0">We're preparing your order right now. This typically takes 1-2 business days.</p>
+            </li>
+            <li class="mb-3">
+              <strong>Shipment Notification</strong>
+              <p class="text-muted small mb-0">Once your order ships, you'll receive a tracking number via email.</p>
+            </li>
+            <li class="mb-3">
+              <strong>Delivery</strong>
+              <p class="text-muted small mb-0">Most orders arrive within 2-3 business days of shipment.</p>
+            </li>
+            <li>
+              <strong>Track Your Order</strong>
+              <p class="text-muted small mb-0">Use the link above to check your order status and tracking information anytime.</p>
+            </li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Newsletter & Notifications -->
+      {% if not is_newsletter_subscriber %}
+      <div class="card shadow-sm mb-5 border-secondary">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">Stay Connected</h5>
+        </div>
+        <div class="card-body">
+          <p class="mb-3">Get exclusive offers, early access to drops, and shipping updates:</p>
+          <form id="newsletterForm" class="input-group">
+            <input type="hidden" name="email" value="{{ email }}">
+            <button type="submit" class="btn btn-secondary">
+              <i class="fas fa-envelope"></i> Subscribe to Newsletter
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- FAQ Link -->
+      <div class="text-center mt-5 mb-5">
+        <p class="text-muted">Have questions? <a href="/faq">Check our FAQ</a> or <a href="/support">contact us</a></p>
+      </div>
+
+      <!-- Return to Store -->
+      <div class="d-grid gap-2">
+        <a href="/store/products" class="btn btn-outline-primary btn-lg">
+          <i class="fas fa-shopping-bag"></i> Continue Shopping
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.order-success-page {
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+}
+
+.card-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px 8px 0 0;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.border-info {
+  border-color: #0d6efd !important;
+  border-left-width: 4px;
+}
+
+.border-secondary {
+  border-color: #6c757d !important;
+  border-left-width: 4px;
+}
+
+@media (max-width: 768px) {
+  .order-success-page {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Copy tracking link to clipboard
+  const copyBtn = document.getElementById('copyBtn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', function() {
+      const link = document.getElementById('trackingLink');
+      const url = window.location.origin + link.value;
+      navigator.clipboard.writeText(url).then(function() {
+        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        copyBtn.classList.remove('btn-outline-secondary');
+        copyBtn.classList.add('btn-success');
+        setTimeout(function() {
+          copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Link';
+          copyBtn.classList.remove('btn-success');
+          copyBtn.classList.add('btn-outline-secondary');
+        }, 2000);
+      });
+    });
+  }
+
+  // Newsletter signup
+  const newsletterForm = document.getElementById('newsletterForm');
+  if (newsletterForm) {
+    newsletterForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.querySelector('input[name="email"]').value;
+      fetch('/api/guest/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, category: 'newsletter' })
+      })
+      .then(res => res.json())
+      .then(data => {
+        newsletterForm.innerHTML = '<div class="alert alert-success mb-0"><i class="fas fa-check-circle"></i> Welcome to our newsletter!</div>';
+      })
+      .catch(err => {
+        console.error('Newsletter signup failed:', err);
+        alert('Failed to subscribe. Please try again.');
+      });
+    });
+  }
+});
+</script>
+{% endblock %}

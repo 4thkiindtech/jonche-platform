@@ -105,6 +105,7 @@ def create_app(config_override=None):
     from routes.admin        import admin_bp
     from routes.products     import products_bp
     from routes.store        import store_bp
+    from routes.guest        import guest_bp
     from routes.apliiq       import apliiq_bp
     from routes.fulfillment  import fulfillment_bp
     from routes.warehouses   import warehouses_bp
@@ -130,6 +131,7 @@ def create_app(config_override=None):
     app.register_blueprint(admin_bp,         url_prefix="/api/admin")
     app.register_blueprint(products_bp,      url_prefix="/api/products")
     app.register_blueprint(store_bp,         url_prefix="/api/store")
+    app.register_blueprint(guest_bp,         url_prefix="/api/guest")
     app.register_blueprint(apliiq_bp,        url_prefix="/api/apliiq")
     app.register_blueprint(fulfillment_bp,   url_prefix="/api/fulfillment")
     app.register_blueprint(warehouses_bp,    url_prefix="/api/warehouses")
@@ -151,5 +153,6 @@ app = create_app()
 if __name__ == "__main__":
     port = int(os.getenv("API_PORT", 5001))
     debug = os.getenv("FLASK_ENV", "development") == "development"
+    use_reloader = os.getenv("FLASK_USE_RELOADER", "false").lower() == "true"
     print(f"🖤 Jonche API running on http://localhost:{port}")
-    app.run(host="0.0.0.0", port=port, debug=debug)
+    app.run(host="0.0.0.0", port=port, debug=debug, use_reloader=use_reloader, threaded=True)

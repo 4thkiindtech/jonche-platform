@@ -1,0 +1,319 @@
+{% extends "base_public.html" %}
+
+{% block title %}Track Your Order - Jonche Store{% endblock %}
+
+{% block content %}
+<div class="container track-order-page py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <h2 class="mb-4 text-center"><i class="fas fa-box"></i> Track Your Order</h2>
+
+      <!-- Lookup Form -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <form id="trackingForm" class="needs-validation" novalidate>
+            <div class="mb-3">
+              <label for="trackingToken" class="form-label">Tracking Link Token</label>
+              <input type="text" class="form-control" id="trackingToken" 
+                     placeholder="Paste your tracking token here" value="{{ token or '' }}" autocomplete="off">
+              <small class="text-muted">Or Use Email below:</small>
+            </div>
+
+            <div class="mb-3">
+              <label for="orderEmail" class="form-label">Order Confirmation Email</label>
+              <input type="email" class="form-control" id="orderEmail" 
+                     placeholder="Enter the email you used for your order" autocomplete="email">
+            </div>
+
+            <div class="mb-3">
+              <label for="orderNumber" class="form-label">Order Number</label>
+              <input type="text" class="form-control" id="orderNumber" 
+                     placeholder="e.g., JNC-A1B2C3D4" autocomplete="off">
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="fas fa-search"></i> Track Order
+            </button>
+          </form>
+
+          <div class="alert alert-info mt-3 small" role="alert">
+            <i class="fas fa-info-circle"></i> 
+            Use either your tracking token (provided in your confirmation email) or your email + order number to look up your order.
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Status Display -->
+      <div id="orderStatus" style="display: none;">
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">Order Status</h5>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <p class="text-muted small mb-1">Order Number</p>
+                <p class="h6" id="displayOrderNumber"></p>
+              </div>
+              <div class="col-md-6">
+                <p class="text-muted small mb-1">Status</p>
+                <p class="h6">
+                  <span id="displayStatus" class="badge bg-secondary"></span>
+                </p>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <p class="text-muted small mb-1">Order Total</p>
+                <p class="h6" id="displayTotal"></p>
+              </div>
+              <div class="col-md-6">
+                <p class="text-muted small mb-1">Tracking Number</p>
+                <p class="h6" id="displayTracking">
+                  <span id="trackingNumber">Not yet assigned</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="card shadow-sm">
+          <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-history"></i> Shipping Timeline</h5>
+          </div>
+          <div class="card-body">
+            <div id="timeline" class="timeline">
+              <!-- Timeline events will be inserted here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div id="errorMessage" class="alert alert-danger" role="alert" style="display: none;">
+        <i class="fas fa-exclamation-circle"></i> <span id="errorText"></span>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="text-center" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted mt-2">Finding your order...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.track-order-page {
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+}
+
+.timeline {
+  position: relative;
+  padding: 1rem 0;
+}
+
+.timeline-item {
+  display: flex;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 30px;
+  width: 2px;
+  height: calc(100% + 30px);
+  background: #dee2e6;
+}
+
+.timeline-item:last-child::before {
+  display: none;
+}
+
+.timeline-dot {
+  width: 32px;
+  height: 32px;
+  background: #0d6efd;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  position: relative;
+  z-index: 1;
+  margin-right: 1rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.75rem;
+}
+
+.timeline-dot.completed {
+  background: #28a745;
+}
+
+.timeline-dot.pending {
+  background: #ffc107;
+  color: #000;
+}
+
+.timeline-content h6 {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.timeline-content p {
+  margin-bottom: 0;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.badge {
+  font-size: 0.9em;
+  padding: 0.4em 0.8em;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const trackingForm = document.getElementById('trackingForm');
+  const token = new URLSearchParams(window.location.search).get('token');
+
+  if (token) {
+    document.getElementById('trackingToken').value = token;
+    lookupOrder();
+  }
+
+  trackingForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    lookupOrder();
+  });
+
+  function lookupOrder() {
+    const button = trackingForm.querySelector('button[type="submit"]');
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+
+    document.getElementById('loadingState').style.display = 'block';
+    document.getElementById('orderStatus').style.display = 'none';
+    document.getElementById('errorMessage').style.display = 'none';
+
+    const token = document.getElementById('trackingToken').value.trim();
+    let url = '/api/guest/tracking/lookup';
+    let init = { method: 'GET', credentials: 'include' };
+
+    if (token) {
+      url = `/api/guest/orders/${token}`;
+    } else {
+      const email = document.getElementById('orderEmail').value.trim();
+      const orderNumber = document.getElementById('orderNumber').value.trim();
+
+      if (!email || !orderNumber) {
+        showError('Please provide either a tracking token or both email and order number');
+        button.disabled = false;
+        button.innerHTML = originalText;
+        document.getElementById('loadingState').style.display = 'none';
+        return;
+      }
+
+      url = `/api/guest/orders/lookup?email=${encodeURIComponent(email)}&order_number=${encodeURIComponent(orderNumber)}`;
+    }
+
+    fetch(url, init)
+      .then(res => {
+        if (!res.ok) throw new Error('Order not found');
+        return res.json();
+      })
+      .then(data => {
+        displayOrder(data, token);
+        document.getElementById('orderStatus').style.display = 'block';
+      })
+      .catch(err => {
+        showError('Order not found. Please check your tracking token or order details.');
+        console.error('Lookup failed:', err);
+      })
+      .finally(() => {
+        button.disabled = false;
+        button.innerHTML = originalText;
+        document.getElementById('loadingState').style.display = 'none';
+      });
+  }
+
+  function displayOrder(order, token) {
+    document.getElementById('displayOrderNumber').textContent = order.order_number;
+    document.getElementById('displayTotal').textContent = '$' + order.total_dollars.toFixed(2);
+    document.getElementById('displayStatus').textContent = order.status.toUpperCase();
+    
+    if (order.tracking_number) {
+      document.getElementById('trackingNumber').textContent = order.tracking_number;
+    }
+
+    // Fetch tracking timeline
+    const trackingUrl = token 
+      ? `/api/guest/tracking/${order.id}?token=${token}`
+      : `/api/guest/tracking/${order.id}?email=${encodeURIComponent(document.getElementById('orderEmail').value)}`;
+
+    fetch(trackingUrl, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        renderTimeline(data.tracking || []);
+      })
+      .catch(err => console.error('Failed to load tracking:', err));
+  }
+
+  function renderTimeline(trackingRecords) {
+    const timeline = document.getElementById('timeline');
+    
+    if (!trackingRecords || trackingRecords.length === 0) {
+      timeline.innerHTML = '<p class="text-muted text-center">No tracking updates yet. Check back soon!</p>';
+      return;
+    }
+
+    timeline.innerHTML = trackingRecords.map(track => `
+      <div class="timeline-item">
+        <div class="timeline-dot ${track.status === 'delivered' ? 'completed' : track.status === 'shipped' ? 'completed' : 'pending'}">
+          ${track.status === 'delivered' ? '<i class="fas fa-check"></i>' : 
+            track.status === 'shipped' ? '<i class="fas fa-box"></i>' :
+            track.status === 'in_production' ? '<i class="fas fa-cog"></i>' : 
+            '<i class="fas fa-hourglass"></i>'}
+        </div>
+        <div class="timeline-content">
+          <h6>${formatStatus(track.status)}</h6>
+          <p>${new Date(track.created_at).toLocaleDateString()} ${new Date(track.created_at).toLocaleTimeString()}</p>
+          ${track.tracking_company ? `<p><small>Carrier: ${track.tracking_company}</small></p>` : ''}
+          ${track.tracking_number ? `<p><small>AWB: ${track.tracking_number}</small></p>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function formatStatus(status) {
+    const statusMap = {
+      'pending': 'Order Pending',
+      'in_production': 'Production',
+      'shipped': 'Shipped',
+      'delivered': 'Delivered'
+    };
+    return statusMap[status] || status.replace(/_/g, ' ').toUpperCase();
+  }
+
+  function showError(message) {
+    document.getElementById('errorText').textContent = message;
+    document.getElementById('errorMessage').style.display = 'block';
+  }
+});
+</script>
+{% endblock %}

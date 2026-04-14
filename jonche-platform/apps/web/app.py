@@ -480,11 +480,30 @@ def store_cart():
 
 @app.route("/store/checkout")
 def store_checkout():
-    """Checkout page (requires login)."""
-    token = request.cookies.get(MEMBER_COOKIE_NAME)
-    if not token:
-        return redirect(url_for("account_login", next="/store/checkout"))
+    """Checkout page (now supports guest checkout - no login required)."""
     return render_template("checkout.html")
+
+
+@app.route("/store/order-success")
+def store_order_success():
+    """Order confirmation page - works for members and guests."""
+    order_id = request.args.get("order_id", "")
+    lookup_token = request.args.get("lookup_token", "")
+    
+    return render_template(
+        "order_success.html",
+        order_id=order_id,
+        lookup_token=lookup_token,
+        email="",  # Would be populated from order data in real impl.
+        is_newsletter_subscriber=False
+    )
+
+
+@app.route("/store/track")
+def store_track_order():
+    """Guest order tracking page - email or token based lookup."""
+    lookup_token = request.args.get("token", "")
+    return render_template("track_order.html", token=lookup_token)
 
 
 @app.route("/admin/store")
@@ -632,5 +651,6 @@ def health():
 if __name__ == "__main__":
     port = int(os.getenv("WEB_PORT", 5000))
     debug = os.getenv("FLASK_ENV", "development") == "development"
+    use_reloader = os.getenv("FLASK_USE_RELOADER", "false").lower() == "true"
     print(f"🖤 Jonche Web running on http://localhost:{port}")
-    app.run(host="0.0.0.0", port=port, debug=debug)
+    app.run(host="0.0.0.0", port=port, debug=debug, use_reloader=use_reloader, threaded=True)

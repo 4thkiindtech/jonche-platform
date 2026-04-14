@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify, g
 from db import db
 from db.models import Order, OrderItem, CheckoutLock, Drop
-from middleware.auth import require_admin, require_member
+from middleware.auth import require_admin, require_member, require_admin_or_member
 
 orders_bp = Blueprint("orders", __name__)
 
@@ -131,10 +131,16 @@ def create_order():
 
 
 @orders_bp.route("/", methods=["GET"])
-@require_admin
+@require_admin_or_member
 def list_orders():
     status = request.args.get("status")
     q = Order.query
+    
+    # If member, show only their orders
+    if hasattr(g, 'current_member') and g.current_member:
+        q = q.filter_by(member_id=g.current_member.id)
+    # If admin, show all orders
+    
     if status:
         q = q.filter_by(status=status)
     orders = q.order_by(Order.created_at.desc()).limit(100).all()

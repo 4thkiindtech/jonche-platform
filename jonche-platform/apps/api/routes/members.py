@@ -63,3 +63,10 @@ def unblacklist_member(member_id):
 @require_member
 def my_profile():
     return jsonify(g.current_member.to_dict())
+
+
+@members_bp.route("/profile", methods=["GET"])
+@require_member
+def profile():
+    """Alias for /me endpoint."""
+    return jsonify(g.current_member.to_dict())
