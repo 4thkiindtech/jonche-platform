@@ -2,43 +2,231 @@
 {% block title %}JONCHE — Partners{% endblock %}
 
 {% block content %}
-<div class="public-card wide">
+<div class="hero-section">
   <div class="public-brand">
-    <div class="logo-wordmark">JONCHE</div>
-    <div class="logo-sub">Partnership Programs</div>
+    <div class="logo-wordmark" style="font-size: 24px;">JONCHE</div>
+    <div class="logo-sub">Partnership Ecosystem</div>
   </div>
+  <h1 class="hero-title">GROW WITH JONCHE</h1>
+  <p class="hero-subtitle">We partner with creators, retailers, and executives to redefine the luxury footwear landscape through exclusive allocations and strategic funding.</p>
+</div>
 
-  <h1 class="public-title">Jonche Partnership Programs</h1>
-  <p class="public-subtitle">We help partners grow through exclusive footwear, funding access, and referral commissions.</p>
-
-  <div class="grid-2" style="margin-top:20px">
+<div class="public-container" style="max-width: 1000px; margin: 0 auto; padding: 0 18px;">
+  <!-- Program Cards -->
+  <div class="grid-2" style="margin-bottom: 40px;">
     {% for key, p in programs.items() %}
-    <div class="panel">
-      <div class="panel-header">
-        <div class="panel-title">{{ p.title|upper }}</div>
-        <a class="panel-action" href="{{ p.route }}">OPEN</a>
+    <div class="benefit-card" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 280px; padding: 32px; border-radius: 4px; position: relative; overflow: hidden;">
+      <!-- Accent bar -->
+      <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--gold), transparent);"></div>
+      
+      <div>
+        <div class="panel-title" style="font-size: 26px; color: var(--gold); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.1em;">{{ p.title }}</div>
+        <div class="muted" style="font-size: 14px; line-height: 1.6; margin-bottom: 20px; color: var(--muted); font-family: 'Space Mono', monospace;">{{ p.subtitle }}</div>
       </div>
-      <div class="muted">{{ p.subtitle }}</div>
-      <div class="public-footnote">CTA: <span class="mono">{{ p.cta }}</span></div>
+
+      <div>
+        <!-- Commission highlight -->
+        <div style="background: rgba(201,168,76,0.08); padding: 12px 14px; border-left: 2px solid var(--gold); margin-bottom: 20px; border-radius: 3px;">
+          <p style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 4px;">Commission</p>
+          <p style="color: var(--cream); font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.05em;">{{ p.commission }}</p>
+        </div>
+
+        <!-- CTA -->
+        <p style="color: var(--cream); font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 13px; line-height: 1.5; margin-bottom: 20px;">
+          "{{ p.cta }}"
+        </p>
+
+        <!-- Apply Button -->
+        <a class="btn-primary full" href="{{ p.route }}" style="text-align: center; display: block; padding: 12px 16px; border-radius: 4px; text-decoration: none; font-weight: 700; letter-spacing: 0.1em; transition: all 0.2s;">
+          <i class="fa-solid fa-arrow-right" style="margin-right: 8px;"></i>VIEW & APPLY
+        </a>
+      </div>
     </div>
     {% endfor %}
   </div>
 
-  <div class="panel" style="margin-top:10px">
-    <div class="panel-header">
-      <div class="panel-title">COMMISSION STRUCTURE</div>
-      <span class="panel-action">FINAL</span>
+  <!-- Commission Structure Panel -->
+  <div class="panel" style="margin-top: 40px; border-radius: 4px; padding: 40px;">
+    <div style="text-align: center; margin-bottom: 32px;">
+      <h2 class="panel-title" style="font-size: 24px; margin-bottom: 8px;">GLOBAL COMMISSION STRUCTURE</h2>
+      <p class="muted" style="font-size: 12px;">Standard rates across all partnership programs</p>
     </div>
+    
     <div class="kv">
-      <div class="kv-row"><div class="kv-k">Affiliate creators</div><div class="kv-v">10–15% per sale</div></div>
-      <div class="kv-row"><div class="kv-k">Bulk referral partners</div><div class="kv-v">20% wholesale order commission</div></div>
-      <div class="kv-row"><div class="kv-k">Strategic funding referrals</div><div class="kv-v">25% of earned funding commission</div></div>
+      <div class="kv-row">
+        <div class="kv-k"><i class="fa-solid fa-users" style="margin-right: 8px;"></i>Affiliate Creators</div>
+        <div class="kv-v" style="color: var(--gold); font-family: 'Bebas Neue', sans-serif; font-size: 16px; font-weight: 700;">10–15% per sale</div>
+      </div>
+      <div class="kv-row">
+        <div class="kv-k"><i class="fa-solid fa-store" style="margin-right: 8px;"></i>Retail Alliance</div>
+        <div class="kv-v" style="color: var(--gold); font-family: 'Bebas Neue', sans-serif; font-size: 16px; font-weight: 700;">Program-based allocations & commissions</div>
+      </div>
+      <div class="kv-row">
+        <div class="kv-k"><i class="fa-solid fa-handshake" style="margin-right: 8px;"></i>Strategic Referral Network</div>
+        <div class="kv-v" style="color: var(--gold); font-family: 'Bebas Neue', sans-serif; font-size: 16px; font-weight: 700;">20% bulk + 25% funding</div>
+      </div>
+      <div class="kv-row">
+        <div class="kv-k"><i class="fa-solid fa-crown" style="margin-right: 8px;"></i>Executives</div>
+        <div class="kv-v" style="color: var(--gold); font-family: 'Bebas Neue', sans-serif; font-size: 16px; font-weight: 700;">Premium (case-by-case)</div>
+      </div>
+    </div>
+
+    <div class="public-footnote" style="margin-top: 24px; text-align: center;">
+      Commission rates are standard and may be adjusted based on program-specific metrics and performance. Contact our team for details.
     </div>
   </div>
 
-  <div class="public-footnote">
-    Pick a program above to apply. If you’re unsure, start with the closest fit — we can re-route internally.
+  <!-- Why Partner Section -->
+  <div style="margin-top: 60px; padding: 40px 0; border-top: 1px solid #1e1e1e;">
+    <h2 class="panel-title" style="font-size: 24px; text-align: center; margin-bottom: 32px;">WHY PARTNER WITH JONCHE</h2>
+    
+    <div class="grid-2">
+      <div class="benefit-card" style="padding: 24px; border-radius: 4px;">
+        <div style="font-size: 28px; color: var(--gold); margin-bottom: 16px;">
+          <i class="fa-solid fa-rocket"></i>
+        </div>
+        <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.1em; color: var(--cream); margin-bottom: 8px;">EXCLUSIVE ACCESS</h3>
+        <p style="color: var(--muted); font-size: 13px; line-height: 1.6; font-family: 'Space Mono', monospace;">
+          Get first access to limited releases, exclusive product allocations, and co-marketing opportunities.
+        </p>
+      </div>
+
+      <div class="benefit-card" style="padding: 24px; border-radius: 4px;">
+        <div style="font-size: 28px; color: var(--gold); margin-bottom: 16px;">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.1em; color: var(--cream); margin-bottom: 8px;">COMPETITIVE EARNINGS</h3>
+        <p style="color: var(--muted); font-size: 13px; line-height: 1.6; font-family: 'Space Mono', monospace;">
+          Earn significant commissions on sales, referrals, and strategic deals with clear, transparent tracking.
+        </p>
+      </div>
+
+      <div class="benefit-card" style="padding: 24px; border-radius: 4px;">
+        <div style="font-size: 28px; color: var(--gold); margin-bottom: 16px;">
+          <i class="fa-solid fa-headset"></i>
+        </div>
+        <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.1em; color: var(--cream); margin-bottom: 8px;">DEDICATED SUPPORT</h3>
+        <p style="color: var(--muted); font-size: 13px; line-height: 1.6; font-family: 'Space Mono', monospace;">
+          Access a dedicated partnership team for strategy, resources, and support throughout your journey.
+        </p>
+      </div>
+
+      <div class="benefit-card" style="padding: 24px; border-radius: 4px;">
+        <div style="font-size: 28px; color: var(--gold); margin-bottom: 16px;">
+          <i class="fa-solid fa-crown"></i>
+        </div>
+        <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.1em; color: var(--cream); margin-bottom: 8px;">PREMIUM BENEFITS</h3>
+        <p style="color: var(--muted); font-size: 13px; line-height: 1.6; font-family: 'Space Mono', monospace;">
+          Co-branding opportunities, priority payouts, and direct access to Jonche leadership.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- How It Works Section -->
+  <div style="margin-top: 60px; padding: 40px 0; border-top: 1px solid #1e1e1e; border-bottom: 1px solid #1e1e1e;">
+    <h2 class="panel-title" style="font-size: 24px; text-align: center; margin-bottom: 40px;">HOW IT WORKS</h2>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
+      <div style="text-align: center;">
+        <div style="width: 60px; height: 60px; background: rgba(201,168,76,0.15); border: 2px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 28px; color: var(--gold);">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </div>
+        <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.1em; color: var(--cream); margin-bottom: 8px;">1. APPLY</h3>
+        <p style="color: var(--muted); font-size: 12px; line-height: 1.6; font-family: 'Space Mono', monospace;">
+          Fill out an application to join your chosen program.
+        </p>
+      </div>
+
+      <div style="text-align: center;">
+        <div style="width: 60px; height: 60px; background: rgba(201,168,76,0.15); border: 2px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 28px; color: var(--gold);">
+          <i class="fa-solid fa-envelope-circle-check"></i>
+        </div>
+        <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.1em; color: var(--cream); margin-bottom: 8px;">2. APPROVE</h3>
+        <p style="color: var(--muted); font-size: 12px; line-height: 1.6; font-family: 'Space Mono', monospace;">
+          We review and approve your application (24–48 hours).
+        </p>
+      </div>
+
+      <div style="text-align: center;">
+        <div style="width: 60px; height: 60px; background: rgba(201,168,76,0.15); border: 2px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 28px; color: var(--gold);">
+          <i class="fa-solid fa-key"></i>
+        </div>
+        <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.1em; color: var(--cream); margin-bottom: 8px;">3. ONBOARD</h3>
+        <p style="color: var(--muted); font-size: 12px; line-height: 1.6; font-family: 'Space Mono', monospace;">
+          Get access to your dashboard, resources & support.
+        </p>
+      </div>
+
+      <div style="text-align: center;">
+        <div style="width: 60px; height: 60px; background: rgba(201,168,76,0.15); border: 2px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 28px; color: var(--gold);">
+          <i class="fa-solid fa-chart-bar"></i>
+        </div>
+        <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.1em; color: var(--cream); margin-bottom: 8px;">4. EARN</h3>
+        <p style="color: var(--muted); font-size: 12px; line-height: 1.6; font-family: 'Space Mono', monospace;">
+          Start earning commissions & grow your business.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Call-to-Action Footer -->
+  <div style="text-align: center; margin-top: 60px; padding: 40px;">
+    <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 0.1em; color: var(--cream); margin-bottom: 12px;">READY TO JOIN?</h2>
+    <p style="color: var(--muted); font-size: 14px; margin-bottom: 28px; line-height: 1.6; max-width: 600px; margin-left: auto; margin-right: auto;">
+      Choose a program above and apply today. Our team will review your application and get back to you within 24–48 hours.
+    </p>
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <a href="#programs" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border-radius: 4px;">
+        <i class="fa-solid fa-arrow-up"></i> EXPLORE PROGRAMS
+      </a>
+      <a href="mailto:partners@jonche.com" class="btn-ghost" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border-radius: 4px;">
+        <i class="fa-solid fa-envelope"></i> ASK A QUESTION
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Button hover effects */
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(201, 168, 76, 0.2);
+  }
+
+  .btn-ghost:hover {
+    background: rgba(201, 168, 76, 0.08);
+  }
+
+  /* Card hover effects */
+  .benefit-card:hover {
+    box-shadow: 0 4px 12px rgba(201, 168, 76, 0.15);
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (max-width: 900px) {
+    .grid-2 {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-section {
+      padding: 60px 20px;
+    }
+
+    .hero-title {
+      font-size: 48px;
+    }
+  }
+</style>
+{% endblock %}
+  </div>
+
+  <div class="public-footnote" style="text-align: center; margin-top: 40px; padding-bottom: 60px;">
+    <p>Unsure which program fits your profile? <a href="/affiliates" class="link">Apply to Affiliates</a> and we'll re-route you if needed.</p>
   </div>
 </div>
 {% endblock %}
-

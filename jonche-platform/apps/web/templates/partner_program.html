@@ -2,120 +2,293 @@
 {% block title %}JONCHE — {{ program.title }}{% endblock %}
 
 {% block content %}
-<div class="public-card wide">
+<div class="hero-section">
   <div class="public-brand">
-    <div class="logo-wordmark">JONCHE</div>
+    <div class="logo-wordmark" style="font-size: 24px;">JONCHE</div>
     <div class="logo-sub">Partnership Program</div>
   </div>
-
-  <h1 class="public-title">{{ program.title }}</h1>
-  <p class="public-subtitle">{{ program.subtitle }}</p>
-
-  <div class="public-actions">
-    <a class="btn-ghost" href="/partners">ALL PROGRAMS</a>
+  <h1 class="hero-title">{{ program.title|upper }}</h1>
+  <p class="hero-subtitle">{{ program.subtitle }}</p>
+  
+  <div class="public-actions" style="justify-content: center; margin-top: 30px;">
+    <a class="btn-ghost" href="/partners" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+      <i class="fa-solid fa-arrow-left-long"></i> ALL PROGRAMS
+    </a>
+    <button class="btn-primary" onclick="document.getElementById('apply-form').scrollIntoView({ behavior: 'smooth' });" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+      <i class="fa-solid fa-pen-to-square"></i> APPLY NOW
+    </button>
   </div>
+</div>
 
-  <div class="grid-2" style="margin-top:20px">
-    <div class="panel">
-      <div class="panel-header">
-        <div class="panel-title">BENEFITS</div>
-        <span class="panel-action">OVERVIEW</span>
+<div class="public-container" style="max-width: 1000px; margin: 0 auto; padding: 0 18px;">
+  <div class="grid-2">
+    <!-- Left Column: Benefits & Info -->
+    <div>
+      <!-- Commission Highlight -->
+      <div class="commission-highlight">
+        <div class="commission-label">Commission Structure</div>
+        <div class="commission-value">{{ program.commission }}</div>
       </div>
-      <ul class="muted" style="margin:0; padding-left:18px">
+
+      <!-- Program Benefits -->
+      <h2 class="panel-title" style="margin: 40px 0 20px; font-size: 24px;">PROGRAM BENEFITS</h2>
+      <div style="display: grid; gap: 16px;">
         {% for b in program.benefits %}
-          <li style="margin: 6px 0">{{ b }}</li>
+        <div class="benefit-card">
+          <div class="benefit-text">
+            <i class="fa-solid fa-check-circle" style="color: var(--gold); margin-right: 10px;"></i>
+            {{ b }}
+          </div>
+        </div>
         {% endfor %}
-      </ul>
-      <div class="public-footnote" style="margin-top:16px">
-        Commission: <span class="mono">{{ program.commission }}</span>
+      </div>
+
+      <!-- Call-to-Action Summary -->
+      <div class="panel" style="margin-top: 32px; padding: 24px; border-radius: 4px; background: rgba(201,168,76,0.05); border: 1px solid rgba(201,168,76,0.15);">
+        <i class="fa-solid fa-lightbulb" style="font-size: 20px; color: var(--gold); margin-bottom: 12px; display: block;"></i>
+        <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.1em; color: var(--cream); margin-bottom: 8px;">WHY PARTNER WITH US</h3>
+        <p style="color: var(--muted); font-size: 12px; line-height: 1.6; font-family: 'Space Mono', monospace;">
+          Jonche is redefining luxury footwear partnerships. Get access to exclusive products, competitive commissions, priority support, and co-marketing opportunities.
+        </p>
       </div>
     </div>
 
-    <div class="panel">
-      <div class="panel-header">
-        <div class="panel-title">APPLY</div>
-        <span class="panel-action">INTAKE</span>
-      </div>
-      <div class="muted">{{ program.cta }}</div>
+    <!-- Right Column: Application Form -->
+    <div id="apply-form" style="scroll-margin-top: 100px;">
+      <div class="panel" style="position: sticky; top: 100px; border-radius: 4px;">
+        <div class="panel-header">
+          <div class="panel-title">APPLICATION INTAKE</div>
+          <span class="panel-action" style="display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-shield-halved" style="font-size: 11px;"></i> SECURE
+          </span>
+        </div>
+        <p class="muted" style="margin-bottom: 24px;">{{ program.cta }}</p>
 
-      {% if error %}
-      <div class="alert">{{ error }}</div>
-      {% endif %}
+        {% if error %}
+        <div class="alert" style="border-radius: 4px;">
+          <i class="fa-solid fa-circle-exclamation"></i> {{ error }}
+        </div>
+        {% endif %}
 
-      <form method="post" class="form grid-form">
-        <input type="hidden" name="source" value="{{ request.args.get('src','') }}">
-        <div>
-          <label class="label">Full Name</label>
-          <input class="input" name="full_name" autocomplete="name" required>
-        </div>
-        <div>
-          <label class="label">Business Name (optional)</label>
-          <input class="input" name="business_name" autocomplete="organization">
-        </div>
-
-        <div>
-          <label class="label">Email</label>
-          <input class="input" type="email" name="email" autocomplete="email" required>
-        </div>
-        <div>
-          <label class="label">Phone</label>
-          <input class="input" name="phone" autocomplete="tel">
-        </div>
-
-        <div class="grid-span">
-          <label class="label">Website / Social Link</label>
-          <input class="input" name="website_or_social" placeholder="https://…">
-        </div>
-
-        <div>
-          <label class="label">City</label>
-          <input class="input" name="city" autocomplete="address-level2">
-        </div>
-        <div>
-          <label class="label">State</label>
-          <input class="input" name="state" autocomplete="address-level1">
-        </div>
-
-        <div>
-          <label class="label">Estimated Monthly Reach</label>
-          <input class="input" name="estimated_monthly_reach" placeholder="10k / 50k / 200k">
-        </div>
-        <div>
-          <label class="label">Type of Network</label>
-          <select class="input" name="network_type">
-            <option value="" selected>Choose…</option>
-            <option value="retail_store">Retail store</option>
-            <option value="creators_media">Creators / media</option>
-            <option value="business_network">Business network</option>
-            <option value="funding_investors">Funding / investors</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-
-        <div class="grid-span">
-          <label class="label">Interested In</label>
-          <div class="muted" style="display:grid; gap:6px; margin-top:8px">
-            <label><input type="checkbox" name="interested_in" value="selling_products"> Selling products</label>
-            <label><input type="checkbox" name="interested_in" value="referrals"> Referrals</label>
-            <label><input type="checkbox" name="interested_in" value="funding_introductions"> Funding introductions</label>
-            <label><input type="checkbox" name="interested_in" value="retail_partnership"> Retail partnership</label>
+        <form method="post" class="form grid-form">
+          <input type="hidden" name="source" value="{{ request.args.get('src','') }}">
+          
+          <!-- Full Name -->
+          <div>
+            <label class="label">Full Name <span style="color: var(--red);">*</span></label>
+            <input class="input" name="full_name" placeholder="John Doe" required style="border-radius: 4px;">
           </div>
-        </div>
 
-        <div class="grid-span">
-          <label class="label">Additional Notes</label>
-          <textarea class="input" name="additional_notes" rows="4" placeholder="Tell us about your network / audience / goals…"></textarea>
-        </div>
+          <!-- Business Name -->
+          <div>
+            <label class="label">Business Name <span style="opacity: 0.5;">(optional)</span></label>
+            <input class="input" name="business_name" placeholder="Company LLC" style="border-radius: 4px;">
+          </div>
 
-        <div class="grid-span">
-          <button class="btn-primary full" type="submit">SUBMIT APPLICATION</button>
-        </div>
-      </form>
+          <!-- Email -->
+          <div>
+            <label class="label">Email Address <span style="color: var(--red);">*</span></label>
+            <input class="input" type="email" name="email" placeholder="john@example.com" required style="border-radius: 4px;">
+          </div>
 
-      <div class="public-footnote">
-        We review applications in order and follow up by email.
+          <!-- Phone -->
+          <div>
+            <label class="label">Phone Number</label>
+            <input class="input" name="phone" placeholder="+1 (555) 000-0000" style="border-radius: 4px;">
+          </div>
+
+          <!-- Website / Social -->
+          <div class="grid-span">
+            <label class="label">Website / Social Link</label>
+            <input class="input" name="website_or_social" placeholder="https://instagram.com/yourbrand" style="border-radius: 4px;">
+          </div>
+
+          <!-- Location -->
+          <div>
+            <label class="label">City</label>
+            <input class="input" name="city" placeholder="New York" style="border-radius: 4px;">
+          </div>
+          <div>
+            <label class="label">State / Region</label>
+            <input class="input" name="state" placeholder="NY" style="border-radius: 4px;">
+          </div>
+
+          <!-- Monthly Reach -->
+          <div>
+            <label class="label">Monthly Reach</label>
+            <input class="input" name="estimated_monthly_reach" placeholder="e.g. 50k+" style="border-radius: 4px;">
+          </div>
+
+          <!-- Network Type -->
+          <div>
+            <label class="label">Network Type</label>
+            <select class="input" name="network_type" style="border-radius: 4px;">
+              <option value="" selected>Choose…</option>
+              <option value="retail_store">Retail Store</option>
+              <option value="creators_media">Creators / Media</option>
+              <option value="business_network">Business Network</option>
+              <option value="funding_investors">Funding / Investors</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <!-- Interested In -->
+          <div class="grid-span">
+            <label class="label">Interested In</label>
+            <div class="muted" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
+              <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" name="interested_in" value="selling_products">
+                <span style="color: var(--cream);">Selling Products</span>
+              </label>
+              <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" name="interested_in" value="referrals">
+                <span style="color: var(--cream);">Referrals</span>
+              </label>
+              <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" name="interested_in" value="funding_introductions">
+                <span style="color: var(--cream);">Funding</span>
+              </label>
+              <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" name="interested_in" value="retail_partnership">
+                <span style="color: var(--cream);">Retail Alliance</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Additional Notes -->
+          <div class="grid-span">
+            <label class="label">Additional Notes</label>
+            <textarea class="input" name="additional_notes" rows="4" placeholder="Tell us about your audience or specific goals…" style="border-radius: 4px; resize: vertical;"></textarea>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="grid-span" style="margin-top: 10px;">
+            <button class="btn-primary full" type="submit" style="height: 54px; font-size: 18px; border-radius: 4px; font-weight: 700; letter-spacing: 0.1em; cursor: pointer; transition: all 0.2s;">
+              <i class="fa-solid fa-paper-plane" style="margin-right: 8px;"></i>SUBMIT APPLICATION
+            </button>
+          </div>
+
+          <!-- Security Note -->
+          <div class="public-footnote" style="text-align: center; grid-column: 1 / -1;">
+            <i class="fa-solid fa-shield-halved" style="color: var(--gold-dim);"></i> Your data is secure & confidential
+          </div>
+        </form>
       </div>
+    </div>
+  </div>
+
+  <!-- FAQ Section -->
+  <div style="margin-top: 60px; padding-top: 40px; border-top: 1px solid #1e1e1e;">
+    <h2 class="panel-title" style="font-size: 22px; margin-bottom: 24px; text-align: center;">FREQUENTLY ASKED QUESTIONS</h2>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 900px; margin: 0 auto;">
+      <!-- FAQ Item 1 -->
+      <div class="panel" style="padding: 24px; border-radius: 4px;">
+        <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 8px;">
+          <i class="fa-solid fa-hourglass-end" style="margin-right: 8px;"></i>How long does review take?
+        </h3>
+        <p style="color: var(--muted); font-size: 12px; line-height: 1.6; font-family: 'Space Mono', monospace;">
+          Most applications are reviewed within 24–48 hours. You'll receive an email with the outcome and next steps.
+        </p>
+      </div>
+
+      <!-- FAQ Item 2 -->
+      <div class="panel" style="padding: 24px; border-radius: 4px;">
+        <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 8px;">
+          <i class="fa-solid fa-coins" style="margin-right: 8px;"></i>When do I earn commissions?
+        </h3>
+        <p style="color: var(--muted); font-size: 12px; line-height: 1.6; font-family: 'Space Mono', monospace;">
+          Commissions are calculated when deals/sales are completed and marked for payout within 3–5 business days.
+        </p>
+      </div>
+
+      <!-- FAQ Item 3 -->
+      <div class="panel" style="padding: 24px; border-radius: 4px;">
+        <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 8px;">
+          <i class="fa-solid fa-arrows-rotate" style="margin-right: 8px;"></i>Can I change programs later?
+        </h3>
+        <p style="color: var(--muted); font-size: 12px; line-height: 1.6; font-family: 'Space Mono', monospace;">
+          Yes! You can discuss program adjustments with our partnership team after approval.
+        </p>
+      </div>
+
+      <!-- FAQ Item 4 -->
+      <div class="panel" style="padding: 24px; border-radius: 4px;">
+        <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 8px;">
+          <i class="fa-solid fa-circle-question" style="margin-right: 8px;"></i>Need more details?
+        </h3>
+        <p style="color: var(--muted); font-size: 12px; line-height: 1.6; font-family: 'Space Mono', monospace;">
+          Contact our partnership team at <a href="mailto:partners@jonche.com" style="color: var(--gold); text-decoration: none;">partners@jonche.com</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Call-to-Action Footer -->
+  <div style="text-align: center; margin-top: 60px; padding: 40px; border-top: 1px solid #1e1e1e;">
+    <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 0.1em; color: var(--cream); margin-bottom: 12px;">READY TO GET STARTED?</h2>
+    <p style="color: var(--muted); font-size: 14px; margin-bottom: 24px; line-height: 1.6;">
+      Join thousands of partners growing with Jonche. Submit your application above or reach out to our team with questions.
+    </p>
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <button class="btn-primary" onclick="document.getElementById('apply-form').scrollIntoView({ behavior: 'smooth' });" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border-radius: 4px; text-decoration: none;">
+        <i class="fa-solid fa-pen-to-square"></i> APPLY NOW
+      </button>
+      <a href="mailto:partners@jonche.com" class="btn-ghost" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border-radius: 4px;">
+        <i class="fa-solid fa-envelope"></i> EMAIL PARTNERS@JONCHE.COM
+      </a>
+      <a href="/partners" class="btn-ghost" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border-radius: 4px;">
+        <i class="fa-solid fa-arrow-left-long"></i> BACK TO PROGRAMS
+      </a>
     </div>
   </div>
 </div>
+
+<style>
+  /* Enhanced button hover effects */
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(201, 168, 76, 0.2);
+  }
+  
+  .btn-ghost:hover {
+    background: rgba(201, 168, 76, 0.08);
+  }
+
+  .benefit-card:hover {
+    box-shadow: 0 4px 12px rgba(201, 168, 76, 0.15);
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Input focus states */
+  .input:focus {
+    background: rgba(201, 168, 76, 0.05);
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .grid-2 {
+      grid-template-columns: 1fr;
+    }
+
+    .panel {
+      position: static !important;
+      top: auto !important;
+    }
+
+    .hero-section {
+      padding: 60px 20px;
+    }
+
+    .hero-title {
+      font-size: 48px;
+    }
+  }
+</style>
 {% endblock %}
